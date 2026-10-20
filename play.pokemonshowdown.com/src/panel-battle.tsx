@@ -704,12 +704,12 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 	}
 	renderMoveButton(props: {
 		name: string, cmd: string, type: Dex.TypeName, tags: string, tooltip: string,
-		moveData: { pp?: number, maxpp?: number, disabled?: boolean },
+		moveData: { pp?: number, maxpp?: number, disabled?: boolean, pokesquad?: string },
 	} | null) {
 		if (!props) {
 			return <button class="movebutton" disabled>&nbsp;</button>;
 		}
-		const pp = props.moveData.maxpp ? `${props.moveData.pp!}/${props.moveData.maxpp}` : '\u2014';
+		const pp = props.moveData.pokesquad ?? (props.moveData.maxpp ? `${props.moveData.pp!}/${props.moveData.maxpp}` : '\u2014');
 		return <button
 			data-cmd={props.cmd} data-tooltip={props.tooltip}
 			class={`movebutton has-tooltip ${props.moveData.disabled ? 'disabled' : `type-${props.type}`}`}
@@ -878,6 +878,22 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 		}
 
 		const special = choices.moveSpecial(choices.current);
+		if (battle.format?.isPokeSquad) {
+			// PokeSquad Battler: each move by its id, with its slot, or how long until it's ready, where PP would be
+			return active.moves.map((moveData, i) => {
+				const move = dex.moves.get(moveData.id || moveData.name);
+				const [moveType, tags] = tooltips.getMoveTypeText(move, valueTracker);
+				const { slot, cooldown } = moveData as any;
+				return this.renderMoveButton({
+					name: TL(move),
+					cmd: `/move ${i + 1}${special}`,
+					type: moveType,
+					tags,
+					tooltip: `move|${move.id}|${pokemonIndex}`,
+					moveData: { ...moveData, pokesquad: cooldown ? `ready in ${cooldown}` : `S${slot || 2}` },
+				});
+			});
+		}
 		return active.moves.map((moveData, i) => {
 			const move = dex.moves.get(moveData.name);
 			const [moveType, tags] = tooltips.getMoveTypeText(move, valueTracker);
@@ -1352,11 +1368,13 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 						class="button replayDownloadButton"
 					>
 						<i class="fa fa-download" aria-hidden></i> Download replay</a>
-					<br />
-					<br />
-					<button class="button" data-cmd="/savereplay">
-						<i class="fa fa-upload" aria-hidden></i> {TL`[Upload and share replay]`}
-					</button>
+					{!(window as any).Config?.noreplayupload && <>
+						<br />
+						<br />
+						<button class="button" data-cmd="/savereplay">
+							<i class="fa fa-upload" aria-hidden></i> {TL`[Upload and share replay]`}
+						</button>
+					</>}
 				</span>
 
 				<button class="button" data-cmd="/play" style="min-width:4.5em">

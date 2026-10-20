@@ -32,6 +32,11 @@ Sprites, sounds and the Pokédex data still load from Pokémon Showdown's own si
   (`battle-animations.ts`: `updateTurnOrder`; `style/battle.css`: `.psmeter`, `.psorder`), and in the tooltip. `pokesquad.html` loads
   this build's `js/battle-animations.js` and `js/battle-animations-moves.js` instead of `data/graphics.js` (which only a full
   build makes, so the page used to fall back to Showdown's own copy).
+- Tooltips by the game's rules (`battle-tooltips.ts`: `showPokeSquadMoveTooltip`, `getSpeedRange`, `calculateModifiedStats`);
+  move buttons by move id with the slot or cooldown in place of PP (`panel-battle.tsx`).
+- `Config.localladder`: the Ladder page asks the server (`/cmd laddertop`, `client-main.ts`, `panel-mainmenu.tsx`).
+- `Config.replayembed`: a downloaded replay loads this site's `js/replay-embed.js` (`battle-log.ts`), which loads this site's files
+  (`replay-embed.ts`); `Config.noreplayupload` hides Upload and share replay (`panel-battle.tsx`).
 - One format: the Battle! box starts on the server's first format when it has no Random Battle (`panel-mainmenu.tsx`), a new
   team is a [Gen 9] PokeSquad team (`panel-teambuilder.tsx`), and the format menu opens a lone section and drops the
   generation buttons when the server has one generation (`panel-teamdropdown.tsx`).

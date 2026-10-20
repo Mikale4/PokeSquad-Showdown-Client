@@ -441,6 +441,12 @@ export class MainMenuRoom extends PSRoom {
 			PS.rooms[`viewuser-${userid}`]?.update(null);
 			PS.rooms[`users`]?.update(null);
 			break;
+		case 'laddertop': {
+			// (a server with its own ladder, like PokeSquad Battler's: [format, the table])
+			const [formatid, html] = response;
+			(PS.rooms[`ladder-${formatid}`] as any)?.setLadderHTML?.(html);
+			break;
+		}
 		case 'rooms':
 			if (response.pspl) {
 				for (const roomInfo of response.pspl) roomInfo.spotlight = "Spotlight";

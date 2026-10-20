@@ -399,7 +399,7 @@ if (!window.BattleFormats) window.BattleFormats = {};
  */
 class PSTeams extends PSStreamModel<'team' | 'format'> {
 	/** false if it uses the ladder in the website */
-	usesLocalLadder = false;
+	usesLocalLadder = !!(window as any).Config?.localladder;   // (a server with its own ladder, like PokeSquad Battler's: Config.localladder)
 	list: Team[] = [];
 	byKey: { [key: string]: Team | undefined } = {};
 	deletedTeams: [Team, number][] = [];

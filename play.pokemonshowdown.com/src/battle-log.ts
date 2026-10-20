@@ -1814,8 +1814,8 @@ export class BattleLog {
 		if (replayid) {
 			// battle room
 			replayid = replayid.slice(7);
-			if (window.Config?.server.id !== 'showdown') {
-				if (!window.Config?.server.registered) {
+			if (window.Config?.server?.id !== 'showdown') {
+				if (!window.Config?.server?.registered) {
 					replayid = 'unregisteredserver-' + replayid;
 				} else {
 					replayid = Config.server.id + '-' + replayid;
@@ -1847,7 +1847,9 @@ export class BattleLog {
 		buf += '<div class="battle-log battle-log-inline"><div class="inner">' + battle.scene.log.elem.innerHTML + '</div></div>\n';
 		buf += '</div>\n';
 		buf += '<script>\n';
-		buf += `let daily = Math.floor(Date.now()/1000/60/60/24);document.write('<script src="https://${Config.routes.client}/js/replay-embed.js?version'+daily+'"></'+'script>');\n`;
+		// (PokeSquad Battler: its own replay player, with the turn meter and the game's data: Config.replayembed)
+		const embed = (window as any).Config?.replayembed || `https://${Config.routes.client}/js/replay-embed.js`;
+		buf += `let daily = Math.floor(Date.now()/1000/60/60/24);document.write('<script src="${embed}?version'+daily+'"></'+'script>');\n`;
 		buf += '</script>\n';
 		return buf;
 	}

@@ -30,30 +30,50 @@ function linkStyle(url: string) {
 function requireScript(url: string) {
 	const scriptEl = document.createElement('script');
 	scriptEl.src = url;
+	scriptEl.async = false; // (in order: each relies on the ones before)
 	document.head.appendChild(scriptEl);
 }
 
-linkStyle('https://play.pokemonshowdown.com/style/font-awesome.css?');
-linkStyle('https://play.pokemonshowdown.com/style/battle.css?a7');
-linkStyle('https://play.pokemonshowdown.com/style/replay.css?a7');
-linkStyle('https://play.pokemonshowdown.com/style/utilichart.css?a7');
+// PokeSquad Battler: a replay plays on this site's own files (its battle scene with the turn meter, its tooltips and PokeSquad's
+// data), found next to this script; the shared Pokédex data and text still come from Showdown's site.
+const PS_SITE = 'https://play.pokemonshowdown.com/';
+const OWN = ((document.currentScript as HTMLScriptElement | null)?.src || '').replace(/js\/replay-embed\.js.*$/, '') || PS_SITE;
+(window as any).Config ||= {
+	version: '0', bannedHosts: [], whitelist: [], customcolors: {},
+	routes: { root: 'pokemonshowdown.com', client: 'play.pokemonshowdown.com', dex: 'dex.pokemonshowdown.com', replays: 'replay.pokemonshowdown.com', users: 'pokemonshowdown.com/users' },
+	server: { id: 'pokesquad' }, defaultserver: { id: 'pokesquad' },
+};
 
-requireScript('https://play.pokemonshowdown.com/js/lib/ps-polyfill.js');
-requireScript('https://play.pokemonshowdown.com/config/config.js?a7');
-requireScript('https://play.pokemonshowdown.com/js/lib/jquery-1.11.0.min.js');
-requireScript('https://play.pokemonshowdown.com/js/lib/html-sanitizer-minified.js');
-requireScript('https://play.pokemonshowdown.com/js/battle-sound.js');
-requireScript('https://play.pokemonshowdown.com/js/battledata.js?a7');
-requireScript('https://play.pokemonshowdown.com/data/pokedex-mini.js?a7');
-requireScript('https://play.pokemonshowdown.com/data/pokedex-mini-bw.js?a7');
-requireScript('https://play.pokemonshowdown.com/data/graphics.js?a7');
-requireScript('https://play.pokemonshowdown.com/data/pokedex.js?a7');
-requireScript('https://play.pokemonshowdown.com/data/moves.js?a7');
-requireScript('https://play.pokemonshowdown.com/data/abilities.js?a7');
-requireScript('https://play.pokemonshowdown.com/data/items.js?a7');
-requireScript('https://play.pokemonshowdown.com/data/teambuilder-tables.js?a7');
-requireScript('https://play.pokemonshowdown.com/js/battle-tooltips.js?a7');
-requireScript('https://play.pokemonshowdown.com/js/battle.js?a7');
+linkStyle(OWN + 'style/font-awesome.css');
+linkStyle(OWN + 'style/battle.css');
+linkStyle(OWN + 'style/replay.css');
+linkStyle(OWN + 'style/utilichart.css');
+
+requireScript(OWN + 'js/lib/ps-polyfill.js');
+requireScript(OWN + 'js/lib/jquery-1.11.0.min.js');
+requireScript(OWN + 'js/lib/html-sanitizer-minified.js');
+requireScript(OWN + 'js/battle-sound.js');
+// (Showdown's battledata.js, piece by piece, in the order the site's own page loads them)
+requireScript(OWN + 'js/battle-dex-data.js');
+requireScript(OWN + 'js/battle-dex.js');
+requireScript(OWN + 'js/battle-teams.js');
+requireScript(OWN + 'js/battle-text-parser.js');
+requireScript(OWN + 'src/battle-log-misc.js');
+requireScript(PS_SITE + 'js/server/chat-formatter.js');
+requireScript(OWN + 'js/battle-log.js');
+requireScript(PS_SITE + 'data/text/en.js');
+requireScript(PS_SITE + 'data/pokedex-mini.js');
+requireScript(PS_SITE + 'data/pokedex-mini-bw.js');
+requireScript(OWN + 'js/battle-animations.js');
+requireScript(OWN + 'js/battle-animations-moves.js');
+requireScript(PS_SITE + 'data/pokedex.js');
+requireScript(PS_SITE + 'data/moves.js');
+requireScript(PS_SITE + 'data/abilities.js');
+requireScript(PS_SITE + 'data/items.js');
+requireScript(PS_SITE + 'data/teambuilder-tables.js');
+requireScript(OWN + 'pokesquad/data.js');
+requireScript(OWN + 'js/battle-tooltips.js');
+requireScript(OWN + 'js/battle.js');
 
 const Replays = {
 	$el: null! as JQuery,

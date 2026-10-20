@@ -627,6 +627,7 @@ export class BattleTooltips {
 	showMoveTooltip(
 		move: Dex.Move, isZOrMax: string, pokemon: Pokemon, serverPokemon: ServerPokemon, gmaxMove?: Dex.Move
 	) {
+		if (this.battle.format?.isPokeSquad) return this.showPokeSquadMoveTooltip(move);
 		let text = '';
 
 		let zEffect = '';
@@ -912,6 +913,22 @@ export class BattleTooltips {
 	 * isActive is true if hovering over a pokemon in the battlefield,
 	 * and false if hovering over a pokemon in the Switch menu.
 	 */
+	/**
+	 * PokeSquad Battler: a move as the game has it (its power, accuracy, slot and cooldown, and its own text, which says what
+	 * changes it). Showdown's modifiers are left out: the game's rules differ (an item's or Ability's effect is a stat stage).
+	 */
+	showPokeSquadMoveTooltip(move: Dex.Move) {
+		const table = (window as any).BattleTeambuilderTable?.gen9pokesquad;
+		const slot = table?.slots[move.id] || 2;
+		const cd = table?.cd?.[slot] || 0;
+		let text = `<h2>${TL(move)}<br />${Dex.getTypeIcon(move.type)} ${Dex.getCategoryIcon(move.category)}</h2>`;
+		if (move.category !== 'Status') text += `<p>${TL.label(TL.tag.basepower, move.basePower || '\u2014')}</p>`;
+		text += `<p>${TL.label(TL.tag.accuracy, move.accuracy === true || !move.accuracy ? `can't miss` : `${move.accuracy}%`)}</p>`;
+		text += `<p><small>Slot:</small> S${slot} ${cd ? `(a ${cd}-turn cooldown after use)` : '(no cooldown)'}</p>`;
+		text += `<p class="tooltip-section">${this.battle.dex.text.get(move).desc}</p>`;
+		return text;
+	}
+
 	showPokemonTooltip(
 		clientPokemon: Pokemon | null, serverPokemon?: ServerPokemon | null, isActive?: boolean, illusionIndex?: number
 	) {
@@ -1182,7 +1199,7 @@ export class BattleTooltips {
 				stats[statName] = Math.floor(stats[statName]);
 			}
 		}
-		if (statStagesOnly) return stats;
+		if (statStagesOnly || this.battle.format?.isPokeSquad) return stats;
 
 		const ability = toID(
 			clientPokemon?.effectiveAbility(serverPokemon) ?? (serverPokemon.ability || serverPokemon.baseAbility)
@@ -1555,6 +1572,10 @@ export class BattleTooltips {
 				return `<p><small>${speedName}</small> ${speedRange} <small>${beforeStatStages}</small></p>`;
 			}
 			const beforeExternalModifiers = TL`(before external modifiers)`;
+			if (this.battle.format?.isPokeSquad) {
+				// (PokeSquad Battler: by nature, slowest, neutral, fastest; its stat stages come on top)
+				return `<p><small>${speedName}</small> ${min}<small class="gray">&ndash;${ev0}&ndash;</small>${max} <small>(before stat stages)</small></p>`;
+			}
 			if (this.battle.tier.includes('Random')) {
 				return `<p><small>${speedName}</small> ${min}${TL` or `}${ev84} <small>${beforeExternalModifiers}</small></p>`;
 			} else if (this.battle.tier.includes("Let's Go")) {
@@ -1654,6 +1675,13 @@ export class BattleTooltips {
 	getSpeedRange(pokemon: Pokemon): { min: number, ev0: number, ev84: number, ev252: number, max: number } {
 		const tr = Math.trunc || Math.floor;
 		const species = pokemon.getSpecies();
+		if (this.battle.format?.isPokeSquad) {
+			// (PokeSquad Battler: every IV the same, no EVs: only the nature changes it)
+			const iv = (window as any).BattleTeambuilderTable?.gen9pokesquad?.iv ?? 28;
+			const lv = pokemon.volatiles.transform?.[4] || pokemon.level;
+			const neutral = tr(tr((2 * species.baseStats.spe + iv) * lv / 100) + 5);
+			return { min: tr(neutral * 0.9), ev0: neutral, ev84: neutral, ev252: neutral, max: tr(neutral * 1.1) };
+		}
 		let rules = this.battle.rules;
 		let baseSpe = species.baseStats.spe;
 		if (rules['Scalemons Mod']) {
