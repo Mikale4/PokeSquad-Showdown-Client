@@ -100,6 +100,8 @@ export class PSSearchResults extends preact.Component<{
 			`<button class="sortcol accuracysortcol${sortCol === 'accuracy' ? ' cur' : ''}" data-sort="accuracy">Acc</button>` +
 			`<button class="sortcol ppsortcol${sortCol === 'pp' ? ' cur' : ''}" data-sort="pp">` +
 			`${search.dex.modid === 'gen9pokesquad' ? 'Slot' : 'PP'}</button>` +
+			(search.dex.modid === 'gen9pokesquad' ?
+				`<button class="sortcol prioritysortcol${sortCol === 'priority' ? ' cur' : ''}" data-sort="priority">Prio</button>` : '') +
 			`</div></li>`;
 	}
 
@@ -280,9 +282,12 @@ export class PSSearchResults extends preact.Component<{
 			`<span class="col widelabelcol"><em>Accuracy</em><br />` +
 			`${move.accuracy && move.accuracy !== true ? `${move.accuracy}%` : '&mdash;'}</span>` +
 			(search.dex.modid === 'gen9pokesquad' ?
-				`<span class="col pplabelcol"><em>Slot</em><br />S${BattleTeambuilderTable['gen9pokesquad']?.slots[id] || 2}</span>` :
-				`<span class="col pplabelcol"><em>PP</em><br />${pp}</span>`) +
-			`<span class="col movedesccol">${escapeHTML(moveText.shortDesc)}</span></a></li>`;
+				// (PokeSquad Battler: the slot in place of PP, the priority, and the text on two lines, all of it on hover)
+				`<span class="col pplabelcol"><em>Slot</em><br />S${BattleTeambuilderTable['gen9pokesquad']?.slots[id] || 2}</span>` +
+				`<span class="col prioritycol"><em>Priority</em><br />${move.priority > 0 ? '+' + move.priority : move.priority < 0 ? '\u2212' + -move.priority : '0'}</span>` +
+				`<span class="col movedesccol psdesc" title="${escapeHTML(moveText.desc || moveText.shortDesc)}">${escapeHTML(moveText.shortDesc)}</span></a></li>` :
+				`<span class="col pplabelcol"><em>PP</em><br />${pp}</span>` +
+				`<span class="col movedesccol">${escapeHTML(moveText.shortDesc)}</span></a></li>`);
 		return buf;
 	}
 

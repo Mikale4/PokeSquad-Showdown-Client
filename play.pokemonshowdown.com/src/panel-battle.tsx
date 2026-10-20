@@ -612,15 +612,15 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 		if (this.base) scene?.tooltips.unlisten(this.base);
 		super.componentWillUnmount();
 	}
-	battleHeight = 360;
+	battleHeight = PS.battleStageH;
 	updateLayout() {
 		if (!this.base) return;
 		const room = this.props.room;
 		if (!room.width) return;
 		const { battleHeight } = this.chooseLayout();
 		this.battleHeight = battleHeight;
-		if (battleHeight !== 360) {
-			room.battle?.scene.$frame!.css('transform', `scale(${battleHeight / 360})`);
+		if (battleHeight !== PS.battleStageH) {
+			room.battle?.scene.$frame!.css('transform', `scale(${battleHeight / PS.battleStageH})`);
 		} else {
 			room.battle?.scene.$frame!.css('transform', 'none');
 		}

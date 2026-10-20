@@ -1244,11 +1244,11 @@ export class Battle {
 		} else {
 			this.messageShownTime = 1;
 		}
-		if (width && width < 640) {
-			const scale = (width / 640);
+		if (width && width < 960) {   // (PokeSquad Battler's stage: 960 by 420)
+			const scale = (width / 960);
 			this.scene.$frame?.css('transform', `scale(${scale})`);
 			this.scene.$frame?.css('transform-origin', 'top left');
-			this.scene.$frame?.css('margin-bottom', `${360 * scale - 360}px`);
+			this.scene.$frame?.css('margin-bottom', `${420 * scale - 420}px`);
 			// this.$foeHint.css('transform', 'scale(' + scale + ')');
 		} else {
 			this.scene.$frame?.css('transform', 'none');

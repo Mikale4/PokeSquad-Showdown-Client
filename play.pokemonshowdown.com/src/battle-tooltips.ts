@@ -925,6 +925,7 @@ export class BattleTooltips {
 		if (move.category !== 'Status') text += `<p>${TL.label(TL.tag.basepower, move.basePower || '\u2014')}</p>`;
 		text += `<p>${TL.label(TL.tag.accuracy, move.accuracy === true || !move.accuracy ? `can't miss` : `${move.accuracy}%`)}</p>`;
 		text += `<p><small>Slot:</small> S${slot} ${cd ? `(a ${cd}-turn cooldown after use)` : '(no cooldown)'}</p>`;
+		text += `<p><small>Priority:</small> ${move.priority > 0 ? '+' + move.priority : move.priority < 0 ? '\u2212' + -move.priority : '0'}</p>`;
 		text += `<p class="tooltip-section">${this.battle.dex.text.get(move).desc}</p>`;
 		return text;
 	}

@@ -82,7 +82,7 @@ const Replays = {
 	init() {
 		this.$el = $('.wrapper');
 		if (!this.$el.length) {
-			$('body').append('<div class="wrapper replay-wrapper" style="max-width:1180px;margin:0 auto"><div class="battle"></div><div class="battle-log"></div><div class="replay-controls"></div><div class="replay-controls-2"></div>');
+			$('body').append('<div class="wrapper replay-wrapper" style="max-width:1400px;margin:0 auto"><div class="battle"></div><div class="battle-log"></div><div class="replay-controls"></div><div class="replay-controls-2"></div>');
 			this.$el = $('.wrapper');
 		}
 

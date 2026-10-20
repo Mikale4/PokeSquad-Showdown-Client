@@ -34,14 +34,14 @@
 }
 
 .replay-controls {
-	position:absolute;top:373px;left:5px;right:0px;text-align:left;
+	position:absolute;top:433px;left:5px;right:0px;text-align:left;
 }
 .replay-controls-2 {
-	position:absolute;top:415px;left:5px;right:0px;text-align:left;
+	position:absolute;top:475px;left:5px;right:0px;text-align:left;
 }
 .replay-wrapper {
 	position: relative;
-	padding-top: 460px !important;
+	padding-top: 520px !important;
 	font-family: Verdana, sans-serif;
 	font-size: 10pt;
 }

@@ -40,6 +40,10 @@ This license DOES NOT extend to any other files in this repository.
 
 */
 
+/** PokeSquad Battler: the battle stage's size (Showdown's is 640 by 360), wide enough for three a side; style/battle.css,
+ * style/client2.css and PS.chooseBattleLayout (client-main.ts) use the same numbers */
+export const STAGE_W = 960, STAGE_H = 420;
+
 export class BattleScene implements BattleSceneStub {
 	battle: Battle;
 	animating = true;
@@ -365,15 +369,17 @@ export class BattleScene implements BattleSceneStub {
 		if (!loc.xscale && loc.xscale !== 0) loc.xscale = loc.scale;
 		if (!loc.yscale && loc.yscale !== 0) loc.yscale = loc.scale;
 
-		let left = 210;
-		let top = 245;
+		// PokeSquad Battler: the stage is STAGE_W by STAGE_H (Showdown's is 640 by 360), your side's middle at (360, 290) and the
+		// other side's at (610, 155), so three a side stand far enough apart that their HP bars never overlap (recalculatePos)
+		let left = 360;
+		let top = 290;
 		let scale = (obj.gen === 5 ?
 			2.0 - ((loc.z!) / 200) :
 			1.5 - 0.5 * ((loc.z!) / 200));
 		if (scale < 0.1) scale = 0.1;
 
-		left += (410 - 190) * ((loc.z!) / 200);
-		top += (135 - 245) * ((loc.z!) / 200);
+		left += (610 - 360) * ((loc.z!) / 200);
+		top += (155 - 290) * ((loc.z!) / 200);
 		left += Math.floor(loc.x! * scale);
 		top -= Math.floor(loc.y! * scale /* - loc.x * scale / 4 */);
 		let width = Math.floor(obj.w * scale * loc.xscale!);
@@ -1081,7 +1087,7 @@ export class BattleScene implements BattleSceneStub {
 
 		if (terrain !== this.curTerrain) {
 			this.$terrain.animate({
-				top: 360,
+				top: STAGE_H,
 				opacity: 0,
 			}, this.curTerrain ? 400 : 1, () => {
 				this.$terrain.attr('class', terrain ? 'weather ' + terrain + 'weather' : 'weather');
@@ -2271,7 +2277,9 @@ export class PokemonSprite extends Sprite {
 				}
 				break;
 			case 2:
-				this.x = (slot * -70 + 20) * (this.isFrontSprite ? 1 : -1);
+				// (PokeSquad Battler: 164 pixels apart on the screen on both sides, more than an HP bar's 154; your side's are
+				// drawn half as big again, so they stand 110 apart; the same order as Showdown's)
+				this.x = this.isFrontSprite ? (1 - slot) * 164 : (slot - 1) * 110;
 				break;
 			}
 			this.y = this.isFrontSprite ? slot * 7 : slot * -10;
@@ -2301,6 +2309,8 @@ export class PokemonSprite extends Sprite {
 		this.left = pos.left;
 		this.top = pos.top;
 		this.statbarLeft = pos.left - 80;
+		// (PokeSquad Battler: an HP bar stays on the battlefield, between the trainers' strips at each side, 100 wide)
+		this.statbarLeft = Math.max(104, Math.min(STAGE_W - 104 - 154, this.statbarLeft));
 		this.statbarTop = pos.top - 73 - statbarOffset;
 		if (this.statbarTop < -4) this.statbarTop = -4;
 

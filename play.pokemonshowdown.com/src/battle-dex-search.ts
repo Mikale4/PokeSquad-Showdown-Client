@@ -2169,6 +2169,9 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 				let pp2 = this.dex.moves.get(id2).pp || 0;
 				return (pp2 - pp1) * sortOrder;
 			});
+		case 'priority':
+			// (PokeSquad Battler's Priority column: the highest first)
+			return results.sort(([, id1], [, id2]) => ((this.dex.moves.get(id2).priority || 0) - (this.dex.moves.get(id1).priority || 0)) * sortOrder);
 		case 'name':
 			return results.sort(([rowType1, id1], [rowType2, id2]) => {
 				const name1 = id1;

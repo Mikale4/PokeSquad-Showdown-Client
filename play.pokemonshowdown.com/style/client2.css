@@ -1745,12 +1745,12 @@ pre.textbox.textbox-empty[placeholder]:before {
  *********************************************************/
 
 .ps-room .battle-userlist {
-	left: 641px;
+	left: 961px;
 }
 .ps-room .battle-log {
 	position: absolute;
 	top: 0;
-	left: 640px;
+	left: 960px;
 	right: 0;
 	bottom: 40px;
 	height: auto;
@@ -1784,7 +1784,7 @@ pre.textbox.textbox-empty[placeholder]:before {
 .ps-room .battle-log-add {
 	position: absolute;
 	bottom: 0;
-	left: 640px;
+	left: 960px;
 	right: 0;
 	top: auto;
 	min-height: 36px;
@@ -1810,9 +1810,9 @@ pre.textbox.textbox-empty[placeholder]:before {
 }
 .battle-controls {
 	position: absolute;
-	top: 370px;
+	top: 430px;
 	left: 0;
-	width: 640px;
+	width: 960px;
 }
 .battle-log .battle-controls {
 	top: 0;
@@ -1847,7 +1847,7 @@ pre.textbox.textbox-empty[placeholder]:before {
 	top: 0;
 	bottom: 0;
 	left: 0;
-	width: 640px;
+	width: 960px;
 }
 .timerbutton {
 	float: right;

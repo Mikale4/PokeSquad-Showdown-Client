@@ -2102,9 +2102,14 @@ export const PS = new class extends PSModel {
 		}
 		return false;
 	}
+	/** PokeSquad Battler: the battle stage (STAGE_W by STAGE_H in battle-animations.ts), drawn up to half as big again when the
+	 * window has room, with the battle log beside it at least 300 wide */
+	battleStageW = 960;
+	battleStageH = 420;
 	chooseBattleLayout(width: number, height: number, preference?: BattleLayoutPreference | null) {
-		let scale = Math.min(1, width / 640, height / 360);
-		const uncappedBattleHeight = Math.round(360 * scale);
+		const W = this.battleStageW, H = this.battleStageH;
+		let scale = Math.min(1.5, width / W, height / H);
+		const uncappedBattleHeight = Math.round(H * scale);
 		let layout: BattlePanelLayout = width > 780 ? 'side-by-side' :
 			height < uncappedBattleHeight + 150 ? 'scrolling' : 'top-and-bottom';
 
@@ -2113,13 +2118,13 @@ export const PS = new class extends PSModel {
 			layout = preferredLayout;
 		}
 		if (layout === 'side-by-side' && width >= 500) {
-			scale = Math.min(scale, Math.max(0, width - 180) / 640);
+			scale = Math.min(scale, Math.max(0, width - 300) / W, Math.max(0, height - 150) / H);
 		} else if (layout === 'top-and-bottom') {
-			scale = Math.min(scale, Math.max(0, height - 180) / 360);
+			scale = Math.min(scale, Math.max(0, height - 180) / H);
 		}
 
-		const battleHeight = Math.round(360 * scale);
-		const battleWidth = Math.round(640 * scale);
+		const battleHeight = Math.round(H * scale);
+		const battleWidth = Math.round(W * scale);
 		let overlayControls = height < battleHeight + 180;
 		if (preferredLayout) {
 			overlayControls = !!preference?.endsWith('-overlay');

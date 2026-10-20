@@ -15,20 +15,21 @@ License: GPLv2
 	border: 1px solid #AAAAAA;
 	background: #CFD5DA;
 	color: black;
-	width: 640px;
-	height: 360px;
+	width: 960px; /* PokeSquad Battler's stage (Showdown's is 640 by 360): STAGE_W, STAGE_H in battle-animations.ts */
+	height: 420px;
 	overflow: hidden;
 
 	font-family: Verdana, sans-serif;
 	font-size: 10pt;
 }
 .backdrop {
-	width: 700px;
-	height: 500px;
+	width: 1060px;
+	height: 560px;
 	position: absolute;
 	top: -90px;
 	left: -50px;
 	background: transparent url(../fx/bg-beach.png) no-repeat scroll left top;
+	background-size: cover;
 	opacity: 0.8;
 }
 .battle a {
@@ -37,10 +38,14 @@ License: GPLv2
 .battle a:hover {
 	color: #1155AA;
 }
+/* PokeSquad Battler: the weather and terrain pictures (700 by 500) stretched over the wider stage */
+.innerbattle .weather {
+	background-size: cover;
+}
 .innerbattle {
 	position: relative;
-	width: 640px;
-	height: 360px;
+	width: 960px;
+	height: 420px;
 	isolation: isolate; /* PokeSquad: the HP bars' z-index (a lower bar over the one above it) stays inside the battle, under popups */
 }
 .battle-log-add {
@@ -49,8 +54,8 @@ License: GPLv2
 	border: 1px solid #AAAAAA;
 	background: #EEF2F5;
 	color: black;
-	top: 369px;
-	left: 640px;
+	top: 429px;
+	left: 960px;
 	right: -1px;
 
 	font-family: Verdana, sans-serif;
@@ -63,9 +68,9 @@ License: GPLv2
 	background: #EEF2F5;
 	color: black;
 	top: 9px;
-	left: 640px;
+	left: 960px;
 	right: -1px;
-	height: 360px;
+	height: 420px;
 
 	font-family: Verdana, sans-serif;
 	font-size: 10pt;

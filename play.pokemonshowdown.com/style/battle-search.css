@@ -356,6 +356,31 @@
 .dexlist .ppsortcol {
 	width: 23px;
 }
+/* PokeSquad Battler: the Priority column, and the move text on two lines (the whole text on hover) */
+.dexlist .prioritycol {
+	padding-top: 1px;
+	height: 28px;
+	width: 34px;
+	text-align: center;
+	font-size: 8pt;
+}
+.dexlist .prioritycol em {
+	color: #999999;
+	font-size: 7pt;
+	font-style: normal;
+}
+.dexlist .prioritysortcol {
+	width: 34px;
+}
+.dexlist .movedesccol.psdesc {
+	white-space: normal;
+	line-height: 11px;
+	padding-top: 3px;
+	height: 25px;
+	padding-left: 6px;
+	width: calc(100% - 374px); /* (whatever the name, type, power, accuracy, slot and priority columns leave) */
+	min-width: 120px;
+}
 
 .dexlist .result a {
 	border-radius: 4px;
