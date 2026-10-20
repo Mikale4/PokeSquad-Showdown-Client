@@ -29,13 +29,18 @@ jobs:
           node-version: 22
       - run: npm ci --no-audit --no-fund
       - run: node build
-      - name: PokeSquad's page as the home page
+      - name: The site, with PokeSquad's page as the home page
+        # (copied without the repo's symlinks: they point at server config files a static site doesn't have)
         run: |
-          cp play.pokemonshowdown.com/pokesquad.html play.pokemonshowdown.com/index.html
-          touch play.pokemonshowdown.com/.nojekyll
+          mkdir _site
+          cp -r play.pokemonshowdown.com/. _site/
+          find _site -type l -delete
+          cp _site/pokesquad.html _site/index.html
+          touch _site/.nojekyll
+          du -sh _site
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: play.pokemonshowdown.com
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
