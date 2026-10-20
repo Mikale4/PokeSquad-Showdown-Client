@@ -674,6 +674,10 @@ class MainMenuPanel extends PSRoomPanel<MainMenuRoom> {
 			</div>)}
 		</div>;
 	}
+	/** PokeSquad Battler: the server's own bot (Config.pokesquadbot): a challenge to it, with your team, opens in its DM */
+	battleBot = () => {
+		PS.join(`challenge-${toID((window as any).Config.pokesquadbot)}` as RoomID);
+	};
 	renderSearchButton() {
 		if (PS.down) {
 			return <div class="menugroup" style="background: rgba(10,10,10,.6)">
@@ -765,6 +769,12 @@ class MainMenuPanel extends PSRoomPanel<MainMenuRoom> {
 					{this.renderGames()}
 
 					{this.renderSearchButton()}
+
+					{(window as any).Config?.pokesquadbot && PS.user.named && <div class="menugroup">
+						<p><button class="mainmenu1 mainmenu button" onClick={this.battleBot}>
+							Battle the Bot<br /><small>PokeSquad Bot plays a top Trainer team</small>
+						</button></p>
+					</div>}
 
 					<div class="menugroup">
 						<p><a class="mainmenu2 mainmenu button" href="teambuilder">{TL`[Teambuilder]`}</a></p>

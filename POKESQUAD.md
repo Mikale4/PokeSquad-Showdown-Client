@@ -46,6 +46,8 @@ Sprites, sounds and the Pokédex data still load from Pokémon Showdown's own si
   server URL-encoded (`changeNameWithPassword`), `|pokesquadsession|` remembers the login for 30 days (`client-main.ts`);
   Register and Password (the gear menu) send `/pokesquadregister` and `/pokesquadpassword`, with no captcha
   (`panel-popups.tsx`); Log out sends `/pokesquadforget`.
+- `Config.pokesquadbot` (`pokesquad.html`: "PokeSquad Bot"): the home page's **Battle the Bot** button, shown once you've
+  chosen a name, opens the challenge box to the server's bot (`panel-mainmenu.tsx`, `battleBot`).
 - One format: the Battle! box starts on the server's first format when it has no Random Battle (`panel-mainmenu.tsx`), a new
   team is a [Gen 9] PokeSquad team (`panel-teambuilder.tsx`), and the format menu opens a lone section and drops the
   generation buttons when the server has one generation (`panel-teamdropdown.tsx`).
