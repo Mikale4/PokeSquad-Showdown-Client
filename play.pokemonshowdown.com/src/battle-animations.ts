@@ -2848,6 +2848,8 @@ export class PokemonSprite extends Sprite {
 			this.scene.$stat.append(this.$statbar);
 			updatePrevhp = true;
 		}
+		// (a lower HP bar is drawn over the one above it, so on both sides each Pokémon's name shows over the bars above it)
+		this.$statbar.css('z-index', 10 + Math.max(0, Math.round(this.statbarTop)));
 		let hpcolor;
 		if (updatePrevhp || updateHp) {
 			hpcolor = BattleScene.getHPColor(pokemon);

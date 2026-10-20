@@ -27,6 +27,7 @@ Sprites, sounds and the Pokédex data still load from Pokémon Showdown's own si
 - `battle-team-editor.tsx`: three move boxes, S1, S2 and S3; a move always goes to its own slot's box (`moveSlotOf`,
   `slotMoves`); stats at the game's IVs with no EVs (only the nature to choose); no Tera; level fixed at 100.
 - `battle-searchresults.tsx`: a move's slot in place of its PP.
+- `battle-animations.ts`: a lower HP bar is drawn over the one above it (`z-index` by its top), so in triples every name shows.
 - The turn meter: the server's `|custom|-pokesquadmeter|actor|ident=meter;...|next;...` lines (`battle.ts`: `turnMeter`,
   `pokesquadActor`, `pokesquadOrder`) drawn as a bar under each HP bar and the turn order in the right sidebar
   (`battle-animations.ts`: `updateTurnOrder`; `style/battle.css`: `.psmeter`, `.psorder`), and in the tooltip. `pokesquad.html` loads
