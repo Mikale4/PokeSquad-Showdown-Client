@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html><head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+	<title>PokeSquad Battler · Showdown</title>
+	<link rel="shortcut icon" href="favicon.ico" id="dynamic-favicon" />
+	<link rel="stylesheet" href="style/battle.css" />
+	<link rel="stylesheet" href="style/client2.css" />
+	<link rel="stylesheet" href="style/utilichart.css" />
+	<meta name="robots" content="noindex" />
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+	<!--[if lte IE 8]><script>
+		window.Config = {"oldie": true};
+	</script><![endif]-->
+</head><body>
+	<div id="ps-frame">
+		<div id="header" class="header">
+			<div class="maintabbarbottom"></div>
+			<img class="logo" src="https://play.pokemonshowdown.com/iconbeta.png" alt="Pokémon Showdown! (beta)" width="50" height="50">
+		</div>
+		<div class="ps-room scrollable" id="room-">
+			<div class="mainmenu-mini-windows">
+				<div class="mini-window" data-roomid="news">
+					<h3 class="mini-window-header"><button class="closebutton" tabindex="-1" aria-label="Close"><i class="fa fa-times-circle"></i></button>News</h3>
+					<div id="room-news" class="mini-window-contents ps-room-light scrollable" style="height: auto;">
+						<div class="readable-bg">
+							<div class="newsentry"><h4>PokeSquad Battler</h4><p>Battle with <b>PokeSquad Battler</b>'s own rules: pick the <b>[Gen 9] PokeSquad</b> format. Three Pok&eacute;mon on the field a side, a turn meter, three moves each (one per slot: S1 has no cooldown, S2 and S3 do), Lv 100.</p><p>Choose a name (no password needed). On the same Wi-Fi, challenge each other: the ladder never pairs two players from one connection.</p><p>The game: <a href="https://mikale4.github.io/PokeSquadBattler/" target="_blank">mikale4.github.io/PokeSquadBattler</a></p></div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="mainmenu">
+				<div id="loading-message" class="mainmessage">Loading... <noscript>FAILED<br /><br />Pok&eacute;mon Showdown requires JavaScript.</noscript></div>
+			</div>
+			<div class="mainmenufooter">
+				<div class="bgcredit"></div>
+				<small>
+					<a href="//dex.pokemonshowdown.com/" target="_blank">Pok&eacute;dex</a> | <a href="//replay.pokemonshowdown.com/" target="_blank">Replays</a> | <a href="http://smogon.com/forums/" target="_blank">Forum</a><br />
+					<a href="//pokemonshowdown.com/rules" target="_blank">Rules</a> | <a href="//pokemonshowdown.com/credits" target="_blank">Credits</a> | <a href="//pokemonshowdown.com/privacy" target="_blank">Privacy</a>
+				</small>
+			</div>
+		</div>
+	</div>
+	<script>
+		function linkStyle(url) {
+			var linkEl = document.createElement('link');
+			linkEl.rel = 'stylesheet';
+			linkEl.href = url;
+			document.head.appendChild(linkEl);
+		}
+		linkStyle("style/sim-types.css");
+		linkStyle("style/teambuilder.css");
+		linkStyle("style/battle-search.css");
+		linkStyle("style/font-awesome.css");
+	</script>
+	<script>
+		// PokeSquad Battler's settings (no Showdown login server: noguestsecurity)
+		{
+			window.Config = {
+				version: '0',
+				bannedHosts: [],
+				whitelist: [],
+				routes: {
+					root: "pokemonshowdown.com",
+					client: "play.pokemonshowdown.com",
+					dex: "dex.pokemonshowdown.com",
+					replays: "replay.pokemonshowdown.com",
+					users: "pokemonshowdown.com/users"
+				},
+				defaultserver: {
+					id: 'pokesquad',
+					host: 'pokesquad-showdown.onrender.com',
+					port: 443,
+					httpport: 443,
+					altport: 443,
+					registered: false,
+					noguestsecurity: true
+				},
+				customcolors: {}
+			};
+		}
+		function loadRemoteData(src) {
+			var scriptEl = document.createElement('script');
+			scriptEl.src = src.replace(/.*\/(data|js)\//g, 'https://play.pokemonshowdown.com/$1/');
+			document.head.appendChild(scriptEl);
+		}
+		Config.testclient = true;
+		(function() {
+			if (location.search !== '') {
+				var m = /\?~~(([^:\/]*)(:[0-9]*)?)/.exec(location.search);
+				if (m) {
+					Config.defaultserver = {
+						id: m[1],
+						host: m[2],
+						port: (m[3] && parseInt(m[3].substr(1))) || 8000,
+						noguestsecurity: true
+					};
+				} else {
+					alert('Unrecognised query string syntax: ' + location.search);
+				}
+			}
+		})();
+	</script>
+	<script nomodule src="/js/lib/ps-polyfill.js"></script>
+	<script src="../config/testclient-key.js"></script>
+	<script src="js/client-core.js" onerror="alert('You must build the client with `node build` before using testclient.html')"></script>
+
+	<script src="js/battle-dex-data.js"></script>
+	<script src="js/battle-dex.js"></script>
+	<script src="js/battle-teams.js"></script>
+	<script src="js/battle-text-parser.js"></script>
+	<script src="js/client-main.js"></script>
+	<script nomodule src="js/lib/sockjs-1.4.0-nwjsfix.min.js"></script>
+	<script src="js/client-connection.js"></script>
+	<script> Net.defaultRoute = 'https://play.pokemonshowdown.com'; </script>
+
+	<script src="js/lib/preact.min.js"></script>
+	<script src="js/panels.js"></script>
+	<script src="js/panel-mainmenu.js"></script>
+	<script src="js/panel-rooms.js"></script>
+	<script src="js/panel-topbar.js"></script>
+	<!-- at this point, the main view is loaded and usable -->
+
+	<script src="js/lib/html-css-sanitizer-minified.js"></script>
+	<script src="src/battle-log-misc.js"></script>
+	<script src="js/server/chat-formatter.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="js/battle-log.js"></script>
+
+	<script src="js/miniedit.js"></script>
+	<script src="js/panel-chat-tournament.js"></script>
+	<script src="js/panel-chat.js"></script>
+	<!-- at this point, chatrooms are usable -->
+
+	<script src="js/panel-popups.js"></script>
+	<script src="js/panel-page.js?"></script>
+	<script src="js/panel-resources.js?" onload="console.log('loaded')"></script>
+	<script src="js/panel-ladder.js?"></script>
+
+	<script src="js/battle-sound.js"></script>
+	<script src="js/lib/jquery-2.2.4.min.js"></script>
+	<script src="data/graphics.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="data/text/en.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="data/commands.js?" onerror="loadRemoteData(this.src)"></script>
+	<script src="js/battle-tooltips.js"></script>
+	<script src="js/battle.js"></script>
+	<script src="js/battle-choices.js"></script>
+	<script src="js/panel-battle.js"></script>
+
+	<script src="data/pokedex.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="data/moves.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="data/items.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="data/abilities.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="data/search-index.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="data/teambuilder-tables.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="js/panel-teamdropdown.js"></script>
+	<script src="js/panel-teambuilder.js?"></script>
+	<script src="js/battle-dex-search.js?"></script>
+	<script src="js/battle-searchresults.js?"></script>
+	<script src="js/battle-team-editor.js?"></script>
+	<script src="js/panel-teambuilder-team.js?"></script>
+
+	<script src="https://play.pokemonshowdown.com/data/pokedex-mini.js"></script>
+	<script src="https://play.pokemonshowdown.com/data/pokedex-mini-bw.js"></script>
+	<script src="data/typechart.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="data/aliases.js" onerror="loadRemoteData(this.src)"></script>
+	<script src="js/lib/d3.v3.min.js"></script>
+	<script src="js/lib/color-thief.min.js"></script>
+
+	<script src="js/client-endload.js?"></script>
+
+</body></html>

@@ -1,0 +1,41 @@
+# PokeSquad Battler's Showdown site on GitHub Pages: the client built (node build) and play.pokemonshowdown.com/ served, with
+# pokesquad.html (PokeSquad's settings: its server, names without a login) as the home page.
+name: PokeSquad Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --no-audit --no-fund
+      - run: node build
+      - name: PokeSquad's page as the home page
+        run: |
+          cp play.pokemonshowdown.com/pokesquad.html play.pokemonshowdown.com/index.html
+          touch play.pokemonshowdown.com/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: play.pokemonshowdown.com
+      - id: deployment
+        uses: actions/deploy-pages@v4
