@@ -236,6 +236,63 @@ License: GPLv2
 	min-height: 10px;
 	font-size: 7pt;
 }
+/* PokeSquad Battler: the turn meter under each HP bar (gold on the Pokémon whose turn it is), and who acts next */
+.statbar .hpbar .psmeter {
+	position: relative;
+	height: 3px;
+	margin: 3px -2px 0;
+	border: 1px solid #777777;
+	border-radius: 3px;
+	background: #E4E9EE;
+	overflow: hidden;
+}
+.statbar .hpbar .psmeter-fill {
+	height: 100%;
+	width: 0;
+	background: #3E9BE0;
+	transition: width 0.35s;
+}
+.statbar .hpbar .psmeter-turn {
+	border-color: #A87A00;
+	box-shadow: 0 0 4px #FFD54A;
+}
+.statbar .hpbar .psmeter-turn .psmeter-fill {
+	background: #FFC83D;
+}
+.psorder {
+	position: absolute;
+	display: none;
+	top: 196px;
+	right: 4px;
+	width: 86px;
+	padding: 2px;
+	border: 2px solid #332200;
+	border-radius: 6px;
+	background: rgba(252, 250, 242, 0.9);
+	text-align: center;
+	line-height: 0;
+}
+.psorder-label {
+	display: block;
+	font-size: 8pt;
+	line-height: 12px;
+	font-weight: bold;
+	color: #332200;
+	margin-bottom: 1px;
+}
+.psorder-mon {
+	display: inline-block;
+	margin: 0 1px;
+	border-bottom: 3px solid #3E9BE0;
+	border-radius: 4px;
+	vertical-align: middle;
+}
+.psorder-far {
+	border-bottom-color: #E0533D;
+}
+.psorder-turn {
+	background: #FFE7A0;
+}
 .statbar .status img {
 	vertical-align: top;
 	top: -2px;

@@ -106,6 +106,8 @@ export class Pokemon implements PokemonDetails, PokemonHealth {
 	volatiles: { [effectid: string]: EffectState } = {};
 	turnstatuses: { [effectid: string]: EffectState } = {};
 	movestatuses: { [effectid: string]: EffectState } = {};
+	/** PokeSquad Battler: its turn meter, 0-100 (-1: not known yet) */
+	turnMeter = -1;
 	lastMove = '';
 
 	/** [[moveName, ppUsed]] */
@@ -1124,6 +1126,9 @@ export class Battle {
 	ended = false;
 	isReplay = false;
 	usesUpkeep = false;
+	/** PokeSquad Battler: the Pokémon whose turn it is, and who acts next (|custom|-pokesquadmeter) */
+	pokesquadActor: Pokemon | null = null;
+	pokesquadOrder: Pokemon[] = [];
 	weather = '' as ID;
 	pseudoWeather = [] as WeatherState[];
 	weatherTimeLeft = 0;
@@ -3868,6 +3873,20 @@ export class Battle {
 		}
 		case 'custom': {
 			// Style is always |custom|-subprotocol|pokemon|additional info
+			if (args[1] === '-pokesquadmeter') {
+				// PokeSquad Battler's turn meter: |custom|-pokesquadmeter|whose turn it is|ident=meter;...|who's next;...
+				const get = (ident: string) => ident ? this.getPokemon(ident) : null;
+				for (const entry of (args[3] || '').split(';')) {
+					const [ident, value] = entry.split('=');
+					const poke = get(ident);
+					if (poke) poke.turnMeter = parseFloat(value) || 0;
+				}
+				this.pokesquadActor = get(args[2]);
+				if (args.length > 4) this.pokesquadOrder = (args[4] || '').split(';').map(get).filter(Boolean) as Pokemon[];
+				for (const side of this.sides) for (const poke of side.active) if (poke) this.scene.updateStatbar(poke);
+				this.scene.updateTurnOrder();
+				break;
+			}
 			if (args[1] === '-endterastallize') {
 				let poke = this.getPokemon(args[2])!;
 				poke.removeVolatile('terastallize' as ID);

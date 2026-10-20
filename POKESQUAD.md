@@ -27,6 +27,11 @@ Sprites, sounds and the Pokédex data still load from Pokémon Showdown's own si
 - `battle-team-editor.tsx`: three move boxes, S1, S2 and S3; a move always goes to its own slot's box (`moveSlotOf`,
   `slotMoves`); stats at the game's IVs with no EVs (only the nature to choose); no Tera; level fixed at 100.
 - `battle-searchresults.tsx`: a move's slot in place of its PP.
+- The turn meter: the server's `|custom|-pokesquadmeter|actor|ident=meter;...|next;...` lines (`battle.ts`: `turnMeter`,
+  `pokesquadActor`, `pokesquadOrder`) drawn as a bar under each HP bar and the turn order in the right sidebar
+  (`battle-animations.ts`: `updateTurnOrder`; `style/battle.css`: `.psmeter`, `.psorder`), and in the tooltip. `pokesquad.html` loads
+  this build's `js/battle-animations.js` and `js/battle-animations-moves.js` instead of `data/graphics.js` (which only a full
+  build makes, so the page used to fall back to Showdown's own copy).
 - One format: the Battle! box starts on the server's first format when it has no Random Battle (`panel-mainmenu.tsx`), a new
   team is a [Gen 9] PokeSquad team (`panel-teambuilder.tsx`), and the format menu opens a lone section and drops the
   generation buttons when the server has one generation (`panel-teamdropdown.tsx`).

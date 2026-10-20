@@ -68,6 +68,8 @@ export class BattleScene implements BattleSceneStub {
 	$leftbar: JQuery = null!;
 	$rightbar: JQuery = null!;
 	$turn: JQuery = null!;
+	/** PokeSquad Battler: who acts next */
+	$turnOrder: JQuery = null!;
 	$messagebar: JQuery = null!;
 	$delay: JQuery = null!;
 	$hiddenMessage: JQuery = null!;
@@ -172,6 +174,7 @@ export class BattleScene implements BattleSceneStub {
 		this.$leftbar = $(eHTML`<div class="leftbar" role="complementary" aria-label="${TL`Your team`}"></div>`);
 		this.$rightbar = $(eHTML`<div class="rightbar" role="complementary" aria-label="${TL`Opponent's team`}"></div>`);
 		this.$turn = $('<div></div>');
+		this.$turnOrder = $('<div class="psorder"></div>');
 		this.$messagebar = $('<div class="messagebar message"></div>');
 		this.$delay = $('<div></div>');
 		this.$hiddenMessage = $('<div class="message" style="position:absolute;display:block;visibility:hidden"></div>');
@@ -187,6 +190,7 @@ export class BattleScene implements BattleSceneStub {
 		this.$battle.append(this.$leftbar);
 		this.$battle.append(this.$rightbar);
 		this.$battle.append(this.$turn);
+		this.$battle.append(this.$turnOrder);
 		this.$battle.append(this.$messagebar);
 		this.$battle.append(this.$delay);
 		this.$battle.append(this.$hiddenMessage);
@@ -1093,6 +1097,25 @@ export class BattleScene implements BattleSceneStub {
 		}
 		const turnText = BattleLog.escapeHTML(this.log.turnText(`${this.battle.turn}`));
 		this.$turn.html(`<div class="turn has-tooltip" data-tooltip="field" data-ownheight="1">${turnText}</div>`);
+	}
+	/** PokeSquad Battler: the Pokémon whose turn it is, then who acts next, as icons (blue: your side, red: the other) */
+	updateTurnOrder() {
+		if (!this.animating || !this.$turnOrder) return;
+		const battle = this.battle;
+		const actor = battle.pokesquadActor;
+		// (the order is who acts after the Pokémon whose turn it is: a fast one can be in it again)
+		const list = [actor, ...battle.pokesquadOrder].filter(poke => poke && !poke.fainted).slice(0, 7) as Pokemon[];
+		if (!list.length) {
+			this.$turnOrder.hide();
+			return;
+		}
+		let buf = `<span class="psorder-label">${actor ? 'Turn' : 'Next'}</span>`;
+		list.forEach((poke, i) => {
+			const near = poke.side === battle.nearSide;
+			buf += `<span class="psorder-mon ${near ? 'psorder-near' : 'psorder-far'}${i === 0 && poke === actor ? ' psorder-turn' : ''}" ` +
+				`title="${BattleLog.escapeHTML(poke.name)}"><span class="picon" style="${Dex.getPokemonIcon(poke, !near)}"></span></span>`;
+		});
+		this.$turnOrder.html(buf).show();
 	}
 	incrementTurn() {
 		if (!this.animating) return;
@@ -2785,7 +2808,9 @@ export class PokemonSprite extends Sprite {
 			buf += ` <img src="${Dex.resourcePrefix}sprites/types/Tera${pokemon.terastallized}.png" alt="Tera-${pokemon.terastallized}" style="vertical-align:text-bottom;" height="16" width="16" />`;
 		}
 
-		buf += `</strong><div class="hpbar"><div class="hptext"></div><div class="hptextborder"></div><div class="prevhp"><div class="hp"></div></div><div class="status"></div>`;
+		// (PokeSquad Battler: the turn meter, under the HP bar)
+		const meter = this.scene.battle.format?.isPokeSquad ? `<div class="psmeter"><div class="psmeter-fill"></div></div>` : '';
+		buf += `</strong><div class="hpbar"><div class="hptext"></div><div class="hptextborder"></div><div class="prevhp"><div class="hp"></div></div>${meter}<div class="status"></div>`;
 		buf += `</div>`;
 		return buf;
 	}
@@ -2888,6 +2913,12 @@ export class PokemonSprite extends Sprite {
 		}
 		let statusbar = this.$statbar.find('.status');
 		statusbar.html(status);
+		if (this.scene.battle.format?.isPokeSquad) {
+			// (its turn: full and gold)
+			const turn = this.scene.battle.pokesquadActor === pokemon;
+			this.$statbar.find('.psmeter-fill').css('width', `${turn ? 100 : Math.max(0, pokemon.turnMeter)}%`);
+			this.$statbar.find('.psmeter').toggleClass('psmeter-turn', turn);
+		}
 	}
 
 	private static getEffectTag(id: string) {

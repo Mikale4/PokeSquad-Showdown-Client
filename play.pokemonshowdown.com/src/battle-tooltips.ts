@@ -1007,6 +1007,11 @@ export class BattleTooltips {
 				}
 			}
 			text += '</p>';
+			if (clientPokemon && this.battle.format?.isPokeSquad && clientPokemon.isActive() && clientPokemon.turnMeter >= 0) {
+				// (PokeSquad Battler: its turn meter)
+				text += this.battle.pokesquadActor === clientPokemon ? `<p><small>Turn meter:</small> its turn now</p>` :
+					`<p><small>Turn meter:</small> ${Math.round(clientPokemon.turnMeter)}%</p>`;
+			}
 		}
 
 		const supportsAbilities = this.battle.gen > 2 && !this.battle.tier.includes("Let's Go");
