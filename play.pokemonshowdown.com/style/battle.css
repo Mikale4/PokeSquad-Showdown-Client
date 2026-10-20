@@ -41,6 +41,7 @@ License: GPLv2
 	position: relative;
 	width: 640px;
 	height: 360px;
+	isolation: isolate; /* PokeSquad: the HP bars' z-index (a lower bar over the one above it) stays inside the battle, under popups */
 }
 .battle-log-add {
 	position: absolute;
