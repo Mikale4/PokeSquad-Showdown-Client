@@ -36,7 +36,10 @@ Sprites, sounds and the Pokédex data still load from Pokémon Showdown's own si
   move buttons by move id with the slot or cooldown in place of PP (`panel-battle.tsx`).
 - `Config.localladder`: the Ladder page asks the server (`/cmd laddertop`, `client-main.ts`, `panel-mainmenu.tsx`).
 - `Config.replayembed`: a downloaded replay loads this site's `js/replay-embed.js` (`battle-log.ts`), which loads this site's files
-  (`replay-embed.ts`); `Config.noreplayupload` hides Upload and share replay (`panel-battle.tsx`).
+  (`replay-embed.ts`); `Config.noreplayupload` would hide Upload and share replay (`panel-battle.tsx`; this site has it).
+- `replay.html#<id>`: a shared replay (Upload and share replay's link): it reads the battle from the server
+  (`/pokesquad-replay/<id>`, `?~~host:port` for another) and plays it on `js/replay-embed.js`, which waits for it
+  (`window.pokesquadReplay`).
 - Registered names on the server (no login server: `PS.user.noLoginServer()`): Choose name sends a remembered login
   (`pokesquadRename`), a registered name's `|nametaken|` opens the login box with a password field, the password goes to the
   server URL-encoded (`changeNameWithPassword`), `|pokesquadsession|` remembers the login for 30 days (`client-main.ts`);

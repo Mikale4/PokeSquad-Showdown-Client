@@ -231,7 +231,13 @@ const Replays = {
 };
 
 window.onload = function () {
-	Replays.init();
+	// (PokeSquad Battler's replay page: the battle comes from the server first, window.pokesquadReplay)
+	const pending = (window as any).pokesquadReplay;
+	if (pending?.then) {
+		pending.then(() => Replays.init(), () => {});
+	} else {
+		Replays.init();
+	}
 };
 
 if (window.matchMedia) {

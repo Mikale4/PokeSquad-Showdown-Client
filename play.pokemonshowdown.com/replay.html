@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width" />
+<title>PokeSquad Battler replay</title>
+<!--
+	PokeSquad Battler's shared replays: replay.html#<id> (the link Upload and share replay gives). The battle comes from the server's
+	database (GET /pokesquad-replay/<id>: the server fork's server/pokesquad-db.ts) and plays on this site's own replay player
+	(js/replay-embed.js: its battle scene with the turn meter, its tooltips and PokeSquad's data). ?~~host:port reads from another server.
+-->
+<style>
+	html, body { font-family: Verdana, sans-serif; font-size: 10pt; margin: 0; padding: 0; }
+	body { padding: 12px 0; }
+	.battle-log { font-family: Verdana, sans-serif; font-size: 10pt; }
+	.replay-status { text-align: center; color: #555; margin: 40px 16px; }
+	.replay-status.error { color: #992222; }
+	h1 { font-weight: normal; text-align: center; }
+	h1 a { color: inherit; }
+</style>
+<div class="wrapper replay-wrapper" style="max-width:1180px;margin:0 auto">
+	<input type="hidden" name="replayid" value="" />
+	<div class="battle"></div><div class="battle-log"></div><div class="replay-controls"></div><div class="replay-controls-2"></div>
+	<p class="replay-status">Loading the replay... (the server sleeps when nobody's on: it can take a minute to wake up)</p>
+	<h1 class="replay-title"></h1>
+	<script type="text/plain" class="battle-log-data"></script>
+</div>
+<script>
+	(function () {
+		var server = 'https://pokesquad-showdown.onrender.com';
+		var m = /\?~~([^:\/]*)(:[0-9]*)?/.exec(location.search);
+		if (m) server = (m[2] && m[2] !== ':443' ? 'http://' : 'https://') + m[1] + (m[2] || '');
+		var id = location.hash.replace(/^#\/?/, '');
+		var status = document.querySelector('.replay-status');
+		var esc = function (s) {
+			return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+		};
+		// (the replay player waits for this before it starts: js/replay-embed.js)
+		window.pokesquadReplay = (id ? fetch(server + '/pokesquad-replay/' + encodeURIComponent(id)) : Promise.reject(new Error('no replay')))
+			.then(function (res) {
+				return res.json().then(function (data) {
+					if (!res.ok) throw new Error(data.error || res.status);
+					return data;
+				});
+			}).then(function (replay) {
+				document.title = replay.format + ' replay: ' + replay.players.join(' vs. ');
+				document.querySelector('input[name=replayid]').value = replay.id;
+				document.querySelector('script.battle-log-data').textContent = replay.log;
+				document.querySelector('.replay-title').innerHTML = '<strong>' + esc(replay.format) + '</strong><br />' +
+					replay.players.map(esc).join(' vs. ') + (replay.rating ? '<br /><small>Rating: ' + replay.rating + '</small>' : '');
+				status.remove();
+			}, function (err) {
+				status.className = 'replay-status error';
+				status.innerHTML = (id ? "This replay couldn't be loaded: " + esc(err.message) : "This link has no replay in it.") +
+					'<br /><br /><a href="./">Go to PokeSquad Battler</a>';
+				throw err;
+			});
+	})();
+</script>
+<script src="js/replay-embed.js"></script>
