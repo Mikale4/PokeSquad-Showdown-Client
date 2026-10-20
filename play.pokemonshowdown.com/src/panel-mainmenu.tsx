@@ -124,7 +124,7 @@ export class MainMenuRoom extends PSRoom {
 				PS.user.initializing = false;
 				let last = '';
 				try { last = localStorage.getItem('pokesquad-name') || ''; } catch {}
-				if (last) PS.send(`/trn ${last},0,`);
+				if (last) PS.send(PS.user.pokesquadRename(last));
 				PS.user.update(null);
 				return true;
 			}

@@ -1165,6 +1165,12 @@ class ChangePasswordPanel extends PSRoomPanel {
 			!password?.length ||
 			!cpassword?.length) return this.setState({ errorMsg: TL`All fields are required` });
 		if (password !== cpassword) return this.setState({ errorMsg: TL`Passwords do not match` });
+		if (PS.user.noLoginServer()) {
+			// (PokeSquad Battler: its server checks the old password and answers in a popup)
+			PS.send(`/pokesquadpassword ${encodeURIComponent(oldpassword)} ${encodeURIComponent(password)}`);
+			this.close();
+			return;
+		}
 		PSLoginServer.query("changepassword", {
 			oldpassword,
 			password,
@@ -1240,6 +1246,14 @@ class RegisterPanel extends PSRoomPanel {
 		let captcha = this.base?.querySelector<HTMLInputElement>('input[name=captcha]')?.value;
 		let password = this.base?.querySelector<HTMLInputElement>('input[name=password]')?.value;
 		let cpassword = this.base?.querySelector<HTMLInputElement>('input[name=cpassword]')?.value;
+		if (PS.user.noLoginServer()) {
+			// (PokeSquad Battler: its server registers the name and answers in a popup)
+			if (!password?.length || !cpassword?.length) return this.setState({ errorMsg: TL`All fields are required` });
+			if (password !== cpassword) return this.setState({ errorMsg: TL`Passwords do not match` });
+			PS.send(`/pokesquadregister ${encodeURIComponent(password)}`);
+			this.close();
+			return;
+		}
 		if (!captcha?.length || !password?.length || !cpassword?.length) {
 			return this.setState({ errorMsg: TL`All fields are required` });
 		}
@@ -1305,7 +1319,7 @@ class RegisterPanel extends PSRoomPanel {
 						<input name="cpassword" type="password" autocomplete="new-password" class="textbox" />
 					</label>
 				</p>
-				<p>
+				{!PS.user.noLoginServer() && <><p>
 					<label class="label"><img
 						src="https://play.pokemonshowdown.com/sprites/gen5ani/pikachu.gif"
 						alt={TL`An Electric-type mouse that is the mascot of the Pokémon franchise.`}
@@ -1316,7 +1330,7 @@ class RegisterPanel extends PSRoomPanel {
 						{TL`What is this Pokémon?`} {}
 						<input name="captcha" class="textbox" />
 					</label>
-				</p>
+				</p></>}
 				<p class="buttonbar">
 					<button type="submit" class="button"><strong>{TL`[Register]`}</strong></button> {}
 					<button type="button" data-cmd="/close" class="button">{TL`[Cancel]`}</button>

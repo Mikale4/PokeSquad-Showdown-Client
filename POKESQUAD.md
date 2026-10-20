@@ -37,6 +37,11 @@ Sprites, sounds and the Pokédex data still load from Pokémon Showdown's own si
 - `Config.localladder`: the Ladder page asks the server (`/cmd laddertop`, `client-main.ts`, `panel-mainmenu.tsx`).
 - `Config.replayembed`: a downloaded replay loads this site's `js/replay-embed.js` (`battle-log.ts`), which loads this site's files
   (`replay-embed.ts`); `Config.noreplayupload` hides Upload and share replay (`panel-battle.tsx`).
+- Registered names on the server (no login server: `PS.user.noLoginServer()`): Choose name sends a remembered login
+  (`pokesquadRename`), a registered name's `|nametaken|` opens the login box with a password field, the password goes to the
+  server URL-encoded (`changeNameWithPassword`), `|pokesquadsession|` remembers the login for 30 days (`client-main.ts`);
+  Register and Password (the gear menu) send `/pokesquadregister` and `/pokesquadpassword`, with no captcha
+  (`panel-popups.tsx`); Log out sends `/pokesquadforget`.
 - One format: the Battle! box starts on the server's first format when it has no Random Battle (`panel-mainmenu.tsx`), a new
   team is a [Gen 9] PokeSquad team (`panel-teambuilder.tsx`), and the format menu opens a lone section and drops the
   generation buttons when the server has one generation (`panel-teamdropdown.tsx`).

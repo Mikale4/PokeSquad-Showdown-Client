@@ -705,6 +705,23 @@ class PSUser extends PSStreamModel<PSLoginState | null> {
 		}
 		return name.trim();
 	}
+	/** PokeSquad Battler's server: no login server (noguestsecurity); its own registered names (server/pokesquad-db.ts there) */
+	noLoginServer() {
+		return !!(window as any).Config?.defaultserver?.noguestsecurity;
+	}
+	/** The remembered login (30 days) the server gave for a registered name: { userid, token, name } */
+	pokesquadSession(): { userid: ID, token: string, name: string } | null {
+		try {
+			return JSON.parse(localStorage.getItem('pokesquad-session') || 'null');
+		} catch {
+			return null;
+		}
+	}
+	/** "/trn" for a name: with its remembered login when there is one */
+	pokesquadRename(name: string) {
+		const session = this.pokesquadSession();
+		return `/trn ${name},0,${session?.userid === toID(name) ? `psst:${session.token}` : ''}`;
+	}
 	changeName(name: string) {
 		name = this.validateName(name);
 		const userid = toID(name);
@@ -719,9 +736,10 @@ class PSUser extends PSStreamModel<PSLoginState | null> {
 			return;
 		}
 		// (PokeSquad Battler: its server has no login server and takes any free name as is, noguestsecurity)
-		if ((window as any).Config?.defaultserver?.noguestsecurity) {
+		if (PS.user.noLoginServer()) {
+			// (a registered name: the server asks for its password, |nametaken|, unless this browser remembers the login)
 			try { localStorage.setItem('pokesquad-name', name); } catch {}
-			PS.send(`/trn ${name},0,`);
+			PS.send(PS.user.pokesquadRename(name));
 			this.update({ success: true });
 			return;
 		}
@@ -735,6 +753,15 @@ class PSUser extends PSStreamModel<PSLoginState | null> {
 		});
 	}
 	changeNameWithPassword(name: string, password: string, special: PSLoginState = { needsPassword: true }) {
+		if (PS.user.noLoginServer()) {
+			// (PokeSquad Battler: the password goes to its own server, URL-encoded; |pokesquadsession| means it was right)
+			if (!password) return this.updateLogin({ name, error: "Password can't be empty.", needsPassword: true });
+			this.loggingIn = name;
+			this.update(null);
+			try { localStorage.setItem('pokesquad-name', name); } catch {}
+			PS.send(`/trn ${name},0,pspw:${encodeURIComponent(password)}`);
+			return;
+		}
 		this.loggingIn = name;
 		if (!password && !special) {
 			this.updateLogin({
@@ -806,6 +833,15 @@ class PSUser extends PSStreamModel<PSLoginState | null> {
 		}
 	}
 	logOut() {
+		if (PS.user.noLoginServer()) {
+			// (PokeSquad Battler: the remembered login ends, here and on the server)
+			const session = PS.user.pokesquadSession();
+			if (session) PS.send(`/pokesquadforget ${session.token}`);
+			try {
+				localStorage.removeItem('pokesquad-session');
+				localStorage.removeItem('pokesquad-name');
+			} catch {}
+		}
 		PSLoginServer.query(
 			'logout', { userid: this.userid }
 		);
@@ -2406,7 +2442,25 @@ export const PS = new class extends PSModel {
 				this.update();
 				continue;
 			} case 'nametaken': {
+				if (PS.user.noLoginServer()) {
+					// (PokeSquad Battler: a registered name, or a wrong password: the login box asks for it)
+					PS.user.loggingIn = null;
+					const message = args[2] || `Someone is already using the name ${args[1]}.`;
+					PS.user.updateLogin({ name: args[1] || undefined, error: message, ...(/password/i.test(message) && args[1] ? { needsPassword: true } as const : {}) });
+					break;
+				}
 				PS.join('login' as RoomID, { args: { error: `Someone is already using the name ${args[1]}.` } });
+				break;
+			} case 'pokesquadsession': {
+				// (PokeSquad Battler: logged in with a registered name; this browser remembers it for 30 days)
+				const [, userid, token, name] = args;
+				try {
+					localStorage.setItem('pokesquad-session', JSON.stringify({ userid, token, name }));
+					localStorage.setItem('pokesquad-name', name);
+				} catch {}
+				PS.user.loggingIn = null;
+				PS.user.registered = { name, userid: userid as ID };
+				PS.user.update({ success: true });
 				break;
 			} case 'chat': case 'c': {
 				if (args[1] === '~' && (args[2] + ' ').startsWith('/warn ')) {
