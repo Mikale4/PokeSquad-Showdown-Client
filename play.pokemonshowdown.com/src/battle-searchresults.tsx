@@ -12,6 +12,8 @@ import { Dex, TL, toID, type ID } from "./battle-dex";
 import type { DexSearch, SearchRow, SearchType } from "./battle-dex-search";
 import { Config } from "./client-main";
 
+declare const BattleTeambuilderTable: any;
+
 const RESULT_ROW_HEIGHT = 33;
 const RESULT_OVERSCAN_ROWS = 12;
 const RESULT_REFILL_THRESHOLD_ROWS = 4;
@@ -96,7 +98,8 @@ export class PSSearchResults extends preact.Component<{
 			`<button class="sortcol movetypesortcol${sortCol === 'category' ? ' cur' : ''}" data-sort="category">Cat</button>` +
 			`<button class="sortcol powersortcol${sortCol === 'power' ? ' cur' : ''}" data-sort="power">Pow</button>` +
 			`<button class="sortcol accuracysortcol${sortCol === 'accuracy' ? ' cur' : ''}" data-sort="accuracy">Acc</button>` +
-			`<button class="sortcol ppsortcol${sortCol === 'pp' ? ' cur' : ''}" data-sort="pp">PP</button>` +
+			`<button class="sortcol ppsortcol${sortCol === 'pp' ? ' cur' : ''}" data-sort="pp">` +
+			`${search.dex.modid === 'gen9pokesquad' ? 'Slot' : 'PP'}</button>` +
 			`</div></li>`;
 	}
 
@@ -276,7 +279,9 @@ export class PSSearchResults extends preact.Component<{
 			`<span class="col labelcol">${move.category !== 'Status' ? `<em>Power</em><br />${move.basePower || '&mdash;'}` : ''}</span>` +
 			`<span class="col widelabelcol"><em>Accuracy</em><br />` +
 			`${move.accuracy && move.accuracy !== true ? `${move.accuracy}%` : '&mdash;'}</span>` +
-			`<span class="col pplabelcol"><em>PP</em><br />${pp}</span>` +
+			(search.dex.modid === 'gen9pokesquad' ?
+				`<span class="col pplabelcol"><em>Slot</em><br />S${BattleTeambuilderTable['gen9pokesquad']?.slots[id] || 2}</span>` :
+				`<span class="col pplabelcol"><em>PP</em><br />${pp}</span>`) +
 			`<span class="col movedesccol">${escapeHTML(moveText.shortDesc)}</span></a></li>`;
 		return buf;
 	}

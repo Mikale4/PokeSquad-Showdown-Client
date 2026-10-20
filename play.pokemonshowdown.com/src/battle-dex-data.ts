@@ -68,6 +68,8 @@ export class BattleFormat implements FormatData {
 	isNatDex: boolean;
 	isBDSP: boolean;
 	isChampions: boolean;
+	/** PokeSquad Battler's own battles (its data: pokesquad/data.js, the gen9pokesquad mod) */
+	isPokeSquad: boolean;
 	allowMultipleMegas: boolean;
 	formeLegality: 'normal' | 'hackmons' | 'custom' = 'normal';
 	abilityLegality: 'normal' | 'hackmons' = 'normal';
@@ -82,11 +84,13 @@ export class BattleFormat implements FormatData {
 		this.isNatDex = id.includes('nationaldex') || id.includes('natdex');
 		this.isBDSP = id.includes('bdsp');
 		this.isChampions = id.includes('champions');
+		this.isPokeSquad = id.includes('pokesquad');
 		this.allowMultipleMegas = id.includes('mega');
 		this.mod = `gen${this.gen}` as ID;
 		if (this.gen === 7 && this.isLetsGo) this.mod = 'gen7letsgo' as ID;
 		if (this.gen === 8 && this.isBDSP) this.mod = 'gen8bdsp' as ID;
 		if (this.gen === 9 && this.isChampions) this.mod = 'champions' as ID;
+		if (this.isPokeSquad) this.mod = 'gen9pokesquad' as ID;
 		if (id.includes('almostanyability') || id.includes('aaa')) this.abilityLegality = 'hackmons';
 		if (id.includes('hackmons') || id.includes('bh')) {
 			this.formeLegality = 'hackmons';

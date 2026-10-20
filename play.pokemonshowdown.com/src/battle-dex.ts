@@ -1329,7 +1329,7 @@ export class ModdedDex {
 			}
 			if (this.modid !== `gen${this.gen}`) {
 				const table = window.BattleTeambuilderTable[this.modid];
-				if (id in table.overrideMoveData) {
+				if (table?.overrideMoveData && id in table.overrideMoveData) {
 					Object.assign(data, table.overrideMoveData[id]);
 				}
 			}
@@ -1362,7 +1362,7 @@ export class ModdedDex {
 			}
 			if (this.modid !== `gen${this.gen}`) {
 				const table = window.BattleTeambuilderTable[this.modid];
-				if (id in table.overrideItemData) {
+				if (table?.overrideItemData && id in table.overrideItemData) {
 					Object.assign(data, table.overrideItemData[id]);
 				}
 			}
@@ -1392,7 +1392,7 @@ export class ModdedDex {
 			}
 			if (this.modid !== `gen${this.gen}`) {
 				const table = window.BattleTeambuilderTable[this.modid];
-				if (id in table.overrideAbilityData) {
+				if (table?.overrideAbilityData && id in table.overrideAbilityData) {
 					Object.assign(data, table.overrideAbilityData[id]);
 				}
 			}
@@ -1425,7 +1425,7 @@ export class ModdedDex {
 			}
 			if (this.modid !== `gen${this.gen}`) {
 				const table = window.BattleTeambuilderTable[this.modid];
-				if (id in table.overrideSpeciesData) {
+				if (table?.overrideSpeciesData && id in table.overrideSpeciesData) {
 					Object.assign(data, table.overrideSpeciesData[id]);
 				}
 			}
@@ -1434,7 +1434,7 @@ export class ModdedDex {
 			}
 
 			const table = window.BattleTeambuilderTable[this.modid];
-			if (id in table.overrideTier) data.tier = table.overrideTier[id];
+			if (table?.overrideTier && id in table.overrideTier) data.tier = table.overrideTier[id];
 			if (!data.tier && id.endsWith('totem')) {
 				data.tier = this.species.get(id.slice(0, -5)).tier;
 			}

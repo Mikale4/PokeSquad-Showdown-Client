@@ -367,7 +367,7 @@ class FormatDropdownPanel extends PSRoomPanel {
 	format: string | null = null;
 	search = '';
 	openSections = PS.prefs.openformats || {
-		'S/V Singles': true, 'S/V Doubles': true, 'Unofficial Metagames': true, 'National Dex': true,
+		'PokeSquad Battler': true, 'S/V Singles': true, 'S/V Doubles': true, 'Unofficial Metagames': true, 'National Dex': true,
 		'Ladder Spotlight': true, 'Other Metagames': true, 'Random Meta of the Decade': true,
 	};
 	click = (e: MouseEvent) => {
@@ -428,11 +428,13 @@ class FormatDropdownPanel extends PSRoomPanel {
 			}
 		}
 		const curGen = (gen: string) => this.gen === gen ? ' cur' : '';
+		const oneGen = new Set(Object.keys(window.BattleFormats || {}).map(id => id.slice(0, 4))).size <= 1;
 		const searchBar = <div>
 			<input
 				type="search" name="search" placeholder={TL`Search formats`} class="textbox autofocus" autocomplete="off"
 				onInput={this.updateSearch} onChange={this.updateSearch}
 			/> {}
+			{!oneGen && <>
 			<button onClick={this.toggleGen} value="gen9" class={`button button-first${curGen('gen9')}`}>{TL`Gen ${9}`}</button>
 			<button onClick={this.toggleGen} value="gen8" class={`button button-middle${curGen('gen8')}`}>8</button>
 			<button onClick={this.toggleGen} value="gen7" class={`button button-middle${curGen('gen7')}`}>7</button>
@@ -442,6 +444,7 @@ class FormatDropdownPanel extends PSRoomPanel {
 			<button onClick={this.toggleGen} value="gen3" class={`button button-middle${curGen('gen3')}`}>3</button>
 			<button onClick={this.toggleGen} value="gen2" class={`button button-middle${curGen('gen2')}`}>2</button>
 			<button onClick={this.toggleGen} value="gen1" class={`button button-last${curGen('gen1')}`}>1</button>
+			</>}
 		</div>;
 		if (!formatsLoaded) {
 			return <PSPanelWrapper room={room}><div class="pad">
@@ -551,7 +554,8 @@ class FormatDropdownPanel extends PSRoomPanel {
 							// reset open state when search/filter changes
 							key={`${section}:${this.gen}:${searchID}`} data-section={section} class="details"
 							// always default to open when searching/filtering
-							open={!!(searchID || this.gen || this.openSections[section])} onToggle={this.toggleSection}
+							open={!!(searchID || this.gen || this.openSections[section] || column.length === 1 && columns.length === 1)}
+							onToggle={this.toggleSection}
 						>
 							<summary>{section}</summary>
 							{options}

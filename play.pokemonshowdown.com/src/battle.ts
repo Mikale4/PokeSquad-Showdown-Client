@@ -3545,6 +3545,9 @@ export class Battle {
 			if (this.format.isChampions) {
 				this.dex = Dex.mod('champions' as ID);
 			}
+			if (this.format.isPokeSquad) {
+				this.dex = Dex.mod('gen9pokesquad' as ID);
+			}
 			this.log(args);
 			break;
 		}

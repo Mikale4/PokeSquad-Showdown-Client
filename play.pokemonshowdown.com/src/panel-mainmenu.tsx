@@ -1048,6 +1048,9 @@ export class TeamForm extends preact.Component<{
 					break;
 				}
 			}
+			// (a server without this format, like PokeSquad Battler's with its one format: the server's first, once its list is in)
+			const first = Object.keys(window.BattleFormats)[0];
+			if (first && !this.props.defaultFormat && !window.BattleFormats[toID(this.format.split('@@@')[0])]) this.format = first;
 		}
 		if (this.props.defaultFormat?.startsWith('!!')) {
 			// The !! means that it overrides any current format, and will only be

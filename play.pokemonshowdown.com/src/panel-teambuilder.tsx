@@ -17,7 +17,7 @@ const ADD_FORMAT_FOLDER_VALUE = '+';
 const ADD_FOLDER_VALUE = '++';
 
 class TeambuilderRoom extends PSRoom {
-	readonly DEFAULT_FORMAT = Dex.modid;
+	readonly DEFAULT_FORMAT = 'gen9pokesquad' as ID;   // (PokeSquad Battler's server has this format alone)
 
 	/**
 	 * - `""` - all

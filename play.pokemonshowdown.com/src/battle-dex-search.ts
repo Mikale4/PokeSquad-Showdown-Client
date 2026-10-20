@@ -672,7 +672,7 @@ abstract class BattleTypedSearch<T extends SearchType> {
 	 */
 	set: Dex.PokemonSet | null = null;
 
-	protected formatType: 'doubles' | 'bdsp' | 'bdspdoubles' | 'rs' | 'frlg' | 'bw1' | 'letsgo' | 'metronome' | 'natdex' |
+	protected formatType: 'doubles' | 'bdsp' | 'bdspdoubles' | 'rs' | 'frlg' | 'bw1' | 'letsgo' | 'metronome' | 'natdex' | 'pokesquad' |
 		'nfe' | 'ssdlc1' | 'ssdlc1doubles' | 'predlc' | 'predlcdoubles' | 'svdlc1' | 'svdlc1doubles' | 'stadium' | 'lc' |
 		'champions' | 'natdexchampions' | null = null;
 	isDoubles = false;
@@ -706,6 +706,11 @@ abstract class BattleTypedSearch<T extends SearchType> {
 			this.dex = Dex;
 		}
 
+		if (format.includes('pokesquad')) {
+			// PokeSquad Battler: its own Pokémon, learnsets (every way the game teaches a move), Abilities and held items
+			this.formatType = 'pokesquad';
+			this.dex = Dex.mod('gen9pokesquad' as ID);
+		}
 		if (format.startsWith('dlc1') && this.dex.gen === 8) {
 			if (format.includes('doubles')) {
 				this.formatType = 'ssdlc1doubles';
@@ -908,6 +913,7 @@ abstract class BattleTypedSearch<T extends SearchType> {
 	}
 	protected firstLearnsetid(speciesid: ID) {
 		let table = BattleTeambuilderTable;
+		if (this.formatType === 'pokesquad') return (speciesid in (table['gen9pokesquad']?.learnsets || {}) ? speciesid : '') as ID;
 		if (this.formatType?.startsWith('bdsp')) table = table['gen8bdsp'];
 		if (this.formatType === 'letsgo') table = table['gen7letsgo'];
 		if (this.formatType === 'bw1') table = table['gen5bw1'];
@@ -927,6 +933,7 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		return '' as ID;
 	}
 	protected nextLearnsetid(learnsetid: ID, speciesid: ID, checkingMoves = false) {
+		if (this.formatType === 'pokesquad') return '' as ID;
 		if (learnsetid === 'lycanrocdusk' || (speciesid === 'rockruff' && learnsetid === 'rockruff')) {
 			return 'rockruffdusk' as ID;
 		}
@@ -953,6 +960,10 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		return '' as ID;
 	}
 	protected canLearn(speciesid: ID, moveid: ID) {
+		if (this.formatType === 'pokesquad') {
+			const learnset = BattleTeambuilderTable['gen9pokesquad']?.learnsets[this.firstLearnsetid(speciesid)];
+			return !!learnset && moveid in learnset;
+		}
 		const move = this.dex.moves.get(moveid);
 		if (this.formatType?.includes('natdex') && move.isNonstandard && move.isNonstandard !== 'Past') {
 			return false;
@@ -1024,6 +1035,7 @@ abstract class BattleTypedSearch<T extends SearchType> {
 			this.formatType === 'stadium' ? `gen${gen}stadium${gen > 1 ? gen : ''}` :
 			this.formatType === 'champions' ? `champions` :
 			this.formatType === 'natdexchampions' ? `natdexchampions` :
+			this.formatType === 'pokesquad' ? 'gen9pokesquad' :
 			`gen${gen}`;
 		if (table?.[tableKey]) {
 			table = table[tableKey];
@@ -1053,6 +1065,8 @@ abstract class BattleTypedSearch<T extends SearchType> {
 		}
 		return true;
 	}
+	/** PokeSquad Battler: the move slot being edited (1-3), or 0 */
+	moveSlot = 0;
 	abstract getTable(): { [id: string]: any };
 	abstract getDefaultResults(): SearchRow[];
 	abstract getBaseResults(): SearchRow[];
@@ -1119,6 +1133,12 @@ class BattlePokemonSearch extends BattleTypedSearch<'pokemon'> {
 		const isHackmons = format.includes('hackmons') || format.endsWith('bh');
 		let isDoublesOrBS = isVGCOrBS || this.formatType?.includes('doubles');
 		const dex = this.dex;
+		if (this.formatType === 'pokesquad') {
+			const psTable = BattleTeambuilderTable['gen9pokesquad'];
+			if (!psTable) return this.getDefaultResults();
+			psTable.tierSet ||= psTable.tiers.map((r: any) => typeof r === 'string' ? ['pokemon', r] : [r[0], r[1]]);
+			return psTable.tierSet;
+		}
 
 		let table = BattleTeambuilderTable;
 		if ((format.endsWith('cap') || format.endsWith('caplc')) && dex.gen < 9) {
@@ -1416,6 +1436,13 @@ class BattleAbilitySearch extends BattleTypedSearch<'ability'> {
 		const dex = this.dex;
 		let species = dex.species.get(this.species);
 		let abilitySet: SearchRow[] = [['header', TL`Abilities`]];
+		if (this.formatType === 'pokesquad') {
+			const list: [ID, number][] = BattleTeambuilderTable['gen9pokesquad']?.abilities[species.id] || [];
+			for (const [id, hidden] of list) if (!hidden) abilitySet.push(['ability', id]);
+			if (list.some(([, hidden]) => hidden)) abilitySet.push(['header', TL`Hidden Abilities`]);
+			for (const [id, hidden] of list) if (hidden) abilitySet.push(['ability', id]);
+			return abilitySet;
+		}
 
 		if (species.isMega) {
 			abilitySet.unshift(['html', `Will be <strong>${species.abilities['0']}</strong> after Mega Evolving.`]);
@@ -1490,7 +1517,9 @@ class BattleItemSearch extends BattleTypedSearch<'item'> {
 	}
 	getDefaultResults(): SearchRow[] {
 		let table = BattleTeambuilderTable;
-		if (this.formatType?.startsWith('bdsp')) {
+		if (this.formatType === 'pokesquad' && table['gen9pokesquad']) {
+			table = table['gen9pokesquad'];
+		} else if (this.formatType?.startsWith('bdsp')) {
 			table = table['gen8bdsp'];
 		} else if (this.formatType === 'bw1') {
 			table = table['gen5bw1'];
@@ -1559,7 +1588,8 @@ class BattleItemSearch extends BattleTypedSearch<'item'> {
 	}
 	override defaultFilter(results: SearchRow[]) {
 		if (this.species && !this.dex.species.get(this.species).nfe) {
-			results.splice(results.findIndex(row => row[1] === 'eviolite'), 1);
+			const eviolite = results.findIndex(row => row[1] === 'eviolite');
+			if (eviolite >= 0) results.splice(eviolite, 1);
 			return results;
 		}
 		return results;
@@ -1876,6 +1906,7 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 		if (!this.species) return this.getDefaultResults();
 		const dex = this.dex;
 		let species = dex.species.get(this.species);
+		if (this.formatType === 'pokesquad') return this.pokeSquadMoves(species.id);
 		const format = this.format;
 		const isHackmons = (format.includes('hackmons') || format.endsWith('bh'));
 		const isSTABmons = (format.includes('stabmons') || format === 'staaabmons');
@@ -2053,6 +2084,34 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 		}
 		return [...usableMoves, ...uselessMoves];
 	}
+	/** PokeSquad Battler: a Pokémon knows one move per slot, S1 (no cooldown), S2 and S3 */
+	pokeSquadMoves(speciesid: ID): SearchRow[] {
+		const table = BattleTeambuilderTable['gen9pokesquad'];
+		const learnset = table?.learnsets[this.firstLearnsetid(speciesid)] || {};
+		const bySlot: ID[][] = [[], [], [], []];
+		for (const id in learnset) bySlot[table.slots[id] || 2].push(id as ID);
+		const results: SearchRow[] = [];
+		for (let slot = 1; slot <= 3; slot++) {
+			if (!bySlot[slot].length) continue;
+			const cd = table.cd?.[slot];
+			results.push(['header', `S${slot} moves ${cd ? `(${cd}-turn cooldown)` : '(no cooldown)'}`]);
+			for (const id of bySlot[slot].sort()) results.push(['move', id]);
+		}
+		return results;
+	}
+	override defaultFilter(results: SearchRow[]) {
+		// (the slot being edited: its own moves; a typed search still finds every slot's, and the move goes to its own slot)
+		if (this.formatType !== 'pokesquad' || !this.moveSlot) return results;
+		const out: SearchRow[] = [];
+		let slot = 0;
+		for (const row of results) {
+			if (row[0] === 'header') slot = parseInt(String(row[1]).charAt(1)) || slot;
+			if (row[0] === 'move' && !row[1].startsWith('_') && slot !== this.moveSlot) continue;
+			if (row[0] === 'header' && slot !== this.moveSlot) continue;
+			out.push(row);
+		}
+		return out;
+	}
 	filter(row: SearchRow, filters: string[][]) {
 		if (!filters) return true;
 		if (row[0] !== 'move') return true;
@@ -2100,6 +2159,11 @@ class BattleMoveSearch extends BattleTypedSearch<'move'> {
 				return (accuracy2 - accuracy1) * sortOrder;
 			});
 		case 'pp':
+			if (this.formatType === 'pokesquad') {
+				// (PokeSquad Battler: the Slot column, S1 first)
+				const slots = BattleTeambuilderTable['gen9pokesquad']?.slots || {};
+				return results.sort(([, id1], [, id2]) => ((slots[id1] || 2) - (slots[id2] || 2)) * sortOrder);
+			}
 			return results.sort(([rowType1, id1], [rowType2, id2]) => {
 				let pp1 = this.dex.moves.get(id1).pp || 0;
 				let pp2 = this.dex.moves.get(id2).pp || 0;

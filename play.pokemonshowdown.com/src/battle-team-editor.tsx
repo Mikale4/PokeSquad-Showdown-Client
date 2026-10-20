@@ -18,6 +18,8 @@ import { PSModel } from "./client-core";
 import { Net, PSLoginServer } from "./client-connection";
 import { PSIcon, PSView } from "./panels";
 
+declare const BattleTeambuilderTable: any;
+
 type InnerFocusType = 'pokemon' | 'ability' | 'item' | 'move' | 'stats' | 'details' | 'import';
 type TeamEditorMode = 'form' | 'import';
 
@@ -155,6 +157,9 @@ export class TeamEditorState extends PSModel {
 	setSearchType(type: SearchType, i: number, value?: string, typeIndex = -1) {
 		const set = this.sets[i];
 		this.search.setType(type, this.format.id, set);
+		if (this.format.isPokeSquad && type === 'move' && this.search.typedSearch) {
+			this.search.typedSearch.moveSlot = typeIndex >= 0 ? typeIndex + 1 : 0;
+		}
 		this.originalSpecies = null;
 		this.search.prependResults = null;
 		if (type === 'move') {
@@ -207,7 +212,7 @@ export class TeamEditorState extends PSModel {
 	getSearchMoves(set: Dex.PokemonSet, typeIndex = -1) {
 		const out: SearchRow[] = [];
 		const start = typeIndex >= 0 ? typeIndex : 0;
-		const end = typeIndex >= 0 ? typeIndex + 1 : Math.max(set.moves.length, 4);
+		const end = typeIndex >= 0 ? typeIndex + 1 : Math.max(set.moves.length, this.format.isPokeSquad ? 3 : 4);
 		for (let i = start; i < end; i++) {
 			out.push(['move', `_${i + 1}_${toID(set.moves[i] || '')}` as ID]);
 		}
@@ -489,7 +494,30 @@ export class TeamEditorState extends PSModel {
 		}
 		return null;
 	}
+	/** PokeSquad Battler: a move's slot (S1, S2, S3) */
+	moveSlotOf(move: string) {
+		const slots = BattleTeambuilderTable['gen9pokesquad']?.slots || {};
+		const id = toID(move);
+		return slots[id] || (id.startsWith('hiddenpower') ? slots['hiddenpower'] : 0) || 2;
+	}
+	/** PokeSquad Battler: the set's moves in their slots (S1, S2, S3; two for one slot: the second after them) */
+	slotMoves(set: Dex.PokemonSet) {
+		const slots = ['', '', ''], extra: string[] = [];
+		for (const move of set.moves) {
+			if (!move) continue;
+			const slot = this.moveSlotOf(move) - 1;
+			if (!slots[slot]) slots[slot] = move;
+			else extra.push(move);
+		}
+		set.moves = [...slots, ...extra];
+		return set.moves;
+	}
 	getIVs(set: Dex.PokemonSet) {
+		if (this.format.isPokeSquad) {
+			// (the game's Lv 100 rules: every IV at its top rank)
+			const iv = BattleTeambuilderTable['gen9pokesquad']?.iv ?? 28;
+			return { hp: iv, atk: iv, def: iv, spa: iv, spd: iv, spe: iv };
+		}
 		const ivs = this.defaultIVs(set);
 		if (set.ivs) Object.assign(ivs, set.ivs);
 		return ivs;
@@ -646,8 +674,9 @@ export class TeamEditorState extends PSModel {
 		const level = set.level || this.format.defaultLevel;
 
 		const baseStat = species.baseStats[stat];
-		const iv = ivOverride;
+		const iv = this.format.isPokeSquad ? this.getIVs(set)[stat] : ivOverride;
 		let ev = evOverride ?? set.evs?.[stat] ?? (this.gen > 2 ? 0 : 252);
+		if (this.format.isPokeSquad) ev = 0;
 		if (this.format.isChampions) ev *= 8;
 
 		if (stat === 'hp') {
@@ -1802,7 +1831,7 @@ class TeamTextbox extends preact.Component<{
 			<span class="detailcell">
 				<label>{TL`Shiny`}</label>{set.shiny ? 'Yes' : '\u2014'}
 			</span>
-			{editor.gen === 9 && !editor.format.isChampions ? (
+			{editor.gen === 9 && !editor.format.isChampions && !editor.format.isPokeSquad ? (
 				<span class="detailcell">
 					<label>{TL`Tera`}</label><PSIcon type={set.teraType || species.requiredTeraType || species.types[0]} />
 				</span>
@@ -2126,6 +2155,9 @@ class TeamEditorForm extends preact.Component<{
 			}
 		} else if (set.moves.includes(name)) {
 			set.moves.splice(set.moves.indexOf(name), 1);
+		} else if (editor.format.isPokeSquad) {
+			editor.slotMoves(set);
+			set.moves[editor.moveSlotOf(name) - 1] = name;
 		} else {
 			for (let i = 0; i < set.moves.length + 1; i++) {
 				if (!set.moves[i]) {
@@ -2470,6 +2502,13 @@ class TeamEditorForm extends preact.Component<{
 				target.value = canonical;
 				break;
 			case 'move':
+				if (editor.format.isPokeSquad) {
+					editor.slotMoves(set);
+					if (canonical) set.moves[editor.moveSlotOf(canonical) - 1] = canonical;
+					else set.moves[focus.typeIndex] = '';
+					target.value = set.moves[focus.typeIndex] || '';
+					break;
+				}
 				if (focus.typeIndex >= set.moves.length && !canonical) return true;
 				while (set.moves.length <= focus.typeIndex) set.moves.push('');
 				set.moves[focus.typeIndex] = canonical;
@@ -2634,6 +2673,7 @@ class TeamEditorForm extends preact.Component<{
 		const { editor } = this.props;
 		const focus = editor.parseFocus(input.getAttribute('data-focus'));
 		if (focus?.type !== 'move' || focus.typeIndex < 0) return false;
+		if (editor.format.isPokeSquad) return false;
 
 		const moves = editor.sets[focus.setIndex]?.moves;
 		if (!moves) return false;
@@ -2775,6 +2815,7 @@ class TeamEditorForm extends preact.Component<{
 		if (focus?.type !== 'move') return false;
 		const set = editor.sets[focus.setIndex];
 		if (!set) return false;
+		if (editor.format.isPokeSquad) return false;
 		const moveIndex = set.moves.indexOf(name);
 		if (moveIndex < 0 || moveIndex === focus.typeIndex) return false;
 
@@ -2836,7 +2877,8 @@ class TeamEditorForm extends preact.Component<{
 		if (set) {
 			if (this.props.editor.showAbility(set)) fields.push('ability');
 			if (this.props.editor.showItem(set)) fields.push('item');
-			for (let i = 0; i < Math.max(4, set.moves.length); i++) fields.push(`move${i}`);
+			const moveRows = this.props.editor.format.isPokeSquad ? 3 : 4;
+			for (let i = 0; i < Math.max(moveRows, set.moves.length); i++) fields.push(`move${i}`);
 			fields.push('stats');
 			fields.push('details');
 			fields.push('nickname');
@@ -2942,12 +2984,14 @@ class TeamEditorForm extends preact.Component<{
 				</table>
 			</div>;
 		}
-		while (set.moves.length < 4) set.moves.push('');
+		if (editor.format.isPokeSquad) editor.slotMoves(set);
+		while (set.moves.length < (editor.format.isPokeSquad ? 3 : 4)) set.moves.push('');
 
 		const species = editor.dex.species.get(set.species);
 		const tintClass = ` tint-${species.types[0]}`;
 		const isCur = TeamEditorState.clipboard?.teams?.[editor.team.key]?.sets[i] ? ' cur' : '';
-		const overfull = set.moves.length > 5 ? ' overfull' : set.moves.length > 4 ? ' overfull overfull5' : '';
+		const moveRows = editor.format.isPokeSquad ? 3 : 4;
+		const overfull = set.moves.length > moveRows + 1 ? ' overfull' : set.moves.length > moveRows ? ' overfull overfull5' : '';
 		return <div class={`set-form${isCur}`} data-set-index={i}>
 			<div style="text-align:right">
 				<button class="option" onClick={this.copySet} value={i}>
@@ -2998,7 +3042,7 @@ class TeamEditorForm extends preact.Component<{
 										src={`${Dex.resourcePrefix}sprites/misc/shiny.png`} width={18} height={18} alt="Yes" style="margin-top: -2px"
 									/> : '\u2014'}
 								</span>}
-								{editor.gen === 9 && !editor.format.isChampions && <span class="detailcell">
+								{editor.gen === 9 && !editor.format.isChampions && !editor.format.isPokeSquad && <span class="detailcell">
 									<label>{TL`Tera`}</label> {}
 									<PSIcon type={set.teraType || species.requiredTeraType || species.types[0]} new={!editor.narrow} tera />
 								</span>}
@@ -3022,8 +3066,10 @@ class TeamEditorForm extends preact.Component<{
 								class={`button ${this.cur('move', i)}`} onClick={this.setFocus} value={`set-${i}-move`}
 							>+</button>
 						</label> {}
-						{[...set.moves, ...['', '', '', ''].slice(set.moves.length)].map((move, moveIndex) => (
-							<div class="moverow">{this.renderInput(i, 'move', move, moveIndex)}</div>
+						{[...set.moves, ...['', '', '', ''].slice(set.moves.length, moveRows)].map((move, moveIndex) => (
+							<div class="moverow">{this.renderInput(
+								i, 'move', move, moveIndex, editor.format.isPokeSquad && moveIndex < 3 ? `S${moveIndex + 1}` : ''
+							)}</div>
 						))}
 					</div></td>
 					<td rowSpan={2} class="set-stats">
@@ -3271,7 +3317,9 @@ class StatForm extends preact.Component<{
 			const width = Math.min(stat * 75 / maxStat, 75);
 			const hue = Math.min(Math.floor(stat * 180 / maxStat), 360);
 			const statName = editor.gen === 1 && statID === 'spa' ? TL.statShort.spc : TL.statShort[statID];
-			if (evs && !ev && !set.evs && statID === 'hp') ev = TL`EVs`;
+			// (PokeSquad Battler has no EVs: the stat itself)
+			if (editor.format.isPokeSquad) ev = stat;
+			else if (evs && !ev && !set.evs && statID === 'hp') ev = TL`EVs`;
 			return <span class="statrow">
 				<em>{statName}</em> {}
 				<span class="statgraph">
@@ -3788,6 +3836,36 @@ class StatForm extends preact.Component<{
 		}
 		const defaultIVs = editor.defaultIVs(set);
 
+		if (editor.format.isPokeSquad) return <div class={`set-stats-form${narrow ? ' tiny-layout' : ''}`} role="dialog" aria-label={TL`Stats`}>
+			<div class="resultheader"><h3>{TL`Stats and nature`}</h3></div>
+			<div class="pad">
+				<table>
+					<tr>
+						<th></th><th>{TL`Base`}</th><th class="setstatbar"></th><th></th>
+					</tr>
+					{stats.map(([statID, statName, stat]) => <tr>
+						<th style="text-align:right;font-weight:normal">{statName}</th>
+						<td style="text-align:right"><strong>{baseStats[statID]}</strong></td>
+						<td class="setstatbar">{this.renderStatbar(stat, statID)}</td>
+						<td style="text-align:right"><strong>{stat}</strong></td>
+					</tr>)}
+				</table>
+				<p>
+					{TL.label(TL`Nature`)}<select
+						name="nature" class="select" onChange={this.changeNature} value={set.nature || 'Serious'}
+					>
+						{Object.values(BattleNatures).map(curNature => (
+							<option value={curNature.name}>
+								{TL(curNature)}
+								{curNature.plus && ` (+${TL.statShort[curNature.plus]}, -${TL.statShort[curNature.minus!]})`}
+							</option>
+						))}
+					</select>
+				</p>
+				<p><small>PokeSquad Battler's rules: every Pokémon is Lv 100 with every IV at {ivs.hp} and no EVs, so its nature is the only thing to choose here.</small></p>
+			</div>
+		</div>;
+
 		return <div class={`set-stats-form${narrow ? ' tiny-layout' : ''}`} role="dialog" aria-label={TL`Stats`}>
 			<div class="resultheader"><h3>{TL`EVs, IVs, and nature`}</h3></div>
 			<div class="pad">
@@ -3987,7 +4065,7 @@ class DetailsForm extends preact.Component<{
 					name="level" value={set.level ?? ''} placeholder={`${editor.format.defaultLevel}`}
 					type="number" inputMode="numeric" min="1" max="100" step="1"
 					class="textbox inputform numform default-placeholder" style="width: 50px"
-					onInput={this.changeLevel} onChange={this.changeLevel} disabled={editor.format.isChampions}
+					onInput={this.changeLevel} onChange={this.changeLevel} disabled={editor.format.isChampions || editor.format.isPokeSquad}
 				/></label><small>(You probably want to change the team's levels by changing the format, not here)</small></p>
 				{editor.gen > 1 && (<>
 					<p><div class="label">{TL.label(TL`Shiny`)}<div class="labeled">
