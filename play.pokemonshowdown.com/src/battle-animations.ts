@@ -897,12 +897,14 @@ export class BattleScene implements BattleSceneStub {
 				});
 				let y = 0;
 				let x = 0;
+				// (PokeSquad Battler's wider stage, STAGE_W by STAGE_H: the six a side 104 apart, about a sprite's width, between the
+				// trainers' strips; Showdown's are 50 apart on its 640 by 360 stage)
 				if (spriteIndex) {
-					y = 48 + 50 + 3 * (i + 6 - side.pokemon.length);
-					x = 48 + 180 + 50 * (i + 6 - side.pokemon.length);
+					y = 118 + 3 * (i + 6 - side.pokemon.length);
+					x = 280 + 104 * (i + 6 - side.pokemon.length);
 				} else {
-					y = 48 + 200 + 3 * i;
-					x = 48 + 100 + 50 * i;
+					y = 300 + 3 * i;
+					x = 190 + 104 * i;
 				}
 				if (textBuf) textBuf += ' / ';
 				textBuf += pokemon.speciesForme;
