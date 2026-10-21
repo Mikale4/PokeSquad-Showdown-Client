@@ -844,9 +844,28 @@ export class BattleScene implements BattleSceneStub {
 		}
 		this.rebuildTooltips();
 	}
+	/** PokeSquad Battler: each place's hover box where its Pokémon stands on the wider stage (recalculatePos, pos), not where
+	 * Showdown's own triples have them */
+	pokesquadTooltips() {
+		const out: { [id: string]: { top: number, left: number, width: number, height: number, tooltip: string } } = {};
+		for (const far of [true, false]) {
+			for (let slot = 0; slot < 3; slot++) {
+				const x = far ? (1 - slot) * 164 : (slot - 1) * 110, y = far ? slot * 7 : slot * -10;
+				const p = this.pos({ x, y, z: far ? 200 : 0 }, { w: 96, h: 96, y: 0, gen: this.gen } as SpriteData);
+				// (no wider than the 164 pixels between two of them, so no box reaches a neighbour's Pokémon)
+				const w = Math.min(156, p.width * 1.3), h = p.height * 1.25, cx = p.left + p.width / 2, cy = p.top + p.height / 2;
+				out[`p${far ? 2 : 1}${'abc'.charAt(slot)}`] = {
+					top: Math.round(cy - h / 2), left: Math.round(cx - w / 2), width: Math.round(w), height: Math.round(h),
+					tooltip: `activepokemon|${far ? 1 : 0}|${slot}`,
+				};
+			}
+		}
+		return out;
+	}
 	rebuildTooltips() {
 		let tooltipBuf = '';
-		const tooltips = this.battle.gameType === 'freeforall' ? {
+		const tooltips = this.battle.format?.isPokeSquad && this.battle.gameType === 'triples' ? this.pokesquadTooltips() :
+			this.battle.gameType === 'freeforall' ? {
 			// FFA battles are visually rendered as triple battle with the center slots empty
 			// so we swap the 2nd and 3rd tooltips on each side
 			p2b: { top: 70, left: 250, width: 80, height: 100, tooltip: 'activepokemon|1|1' },

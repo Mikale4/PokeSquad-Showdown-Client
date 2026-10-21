@@ -772,7 +772,7 @@ class MainMenuPanel extends PSRoomPanel<MainMenuRoom> {
 
 					{(window as any).Config?.pokesquadbot && PS.user.named && <div class="menugroup">
 						<p><button class="mainmenu1 mainmenu button" onClick={this.battleBot}>
-							Battle the Bot<br /><small>PokeSquad Bot plays a top Trainer team</small>
+							Battle the Bot<br /><small>PokeSquad Bot plays a top Trainer team, or a random one</small>
 						</button></p>
 					</div>}
 
