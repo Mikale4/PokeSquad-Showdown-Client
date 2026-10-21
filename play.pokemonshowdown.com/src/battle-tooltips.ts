@@ -922,12 +922,16 @@ export class BattleTooltips {
 		const slot = table?.slots[move.id] || 2;
 		const cd = table?.cd?.[slot] || 0;
 		let text = `<h2>${TL(move)}<br />${Dex.getTypeIcon(move.type)} ${Dex.getCategoryIcon(move.category)}</h2>`;
-		// (Stored Power, Rage, Rage Fist, Punishment and Payback, the owner's rules: 50 power, plus 50 for every hit the user has taken,
-		// up to 350; the hits are the game's own count, from the turn meter's line)
+		// (the owner's rules: Rage, Rage Fist, Punishment and Payback, 50 power plus 50 for every hit the user has taken, the game's own
+		// count from the turn meter's line; Stored Power and Power Trip, 50 plus 50 for every raised stage on its badge; both up to 250)
 		let power: string | number = move.basePower || '\u2014';
 		if (pokemon && table?.rage?.includes(move.id)) {
 			const hits = pokemon.timesAttacked || 0;
-			power = `${Math.min(350, move.basePower + 50 * hits)} (hit ${hits} time${hits === 1 ? '' : 's'})`;
+			power = `${Math.min(250, move.basePower + 50 * hits)} (hit ${hits} time${hits === 1 ? '' : 's'})`;
+		} else if (pokemon && table?.boostPower?.includes(move.id)) {
+			let raised = 0;
+			for (const n of Object.values(pokemon.boosts)) if (n > 0) raised += n;
+			power = `${Math.min(250, move.basePower + 50 * raised)} (${raised} raised stage${raised === 1 ? '' : 's'})`;
 		}
 		if (move.category !== 'Status') text += `<p>${TL.label(TL.tag.basepower, power)}</p>`;
 		text += `<p>${TL.label(TL.tag.accuracy, move.accuracy === true || !move.accuracy ? `can't miss` : `${move.accuracy}%`)}</p>`;
