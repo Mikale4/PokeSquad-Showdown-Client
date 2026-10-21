@@ -104,6 +104,8 @@ window.PokeSquadData = {"v":"2026-10-21","level":100,"iv":28,"cd":{"1":0,"2":3,"
 	/** The game's texts for its moves, Abilities and held items (Showdown's English text file can load more than once: each time
 	 * it replaces them, and they're laid on again) */
 	function applyTexts() {
+		// (a round, every Pokémon on the field acting once: the battle log's heading and the box on the battlefield, the owner's ask)
+		var dt = BattleText.en.Default && BattleText.en.Default.default; if (dt) dt.turn = '== Round {NUMBER} ==';
 		D.moves.forEach(function (m) { text('Moves', m[0], m[1] || null, m[8], m[9]); });
 		D.abText.forEach(function (a) {
 			// [id, name, text, works]

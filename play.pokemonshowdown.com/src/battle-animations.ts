@@ -984,6 +984,8 @@ export class BattleScene implements BattleSceneStub {
 	}
 
 	turnsLeft(min: number, max = 0) {
+		// (PokeSquad Battler: field effects last rounds, every Pokémon on the field acting once)
+		if (this.battle.format?.isPokeSquad) return max ? `(${min} or ${max} rounds)` : min === 1 ? `(1 round)` : `(${min} rounds)`;
 		if (max) {
 			const range = TL.orList([`${min}`, `${max}`]);
 			return TL`(${range} turns)`;

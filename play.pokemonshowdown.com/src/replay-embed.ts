@@ -197,9 +197,9 @@ const Replays = {
 
 		if (this.battle.paused) {
 			const resetDisabled = !this.battle.started ? ' disabled' : '';
-			this.$('.replay-controls').html('<button data-action="play"><i class="fa fa-play"></i> Play</button><button data-action="reset"' + resetDisabled + '><i class="fa fa-undo"></i> Reset</button> <button data-action="rewind"><i class="fa fa-step-backward"></i> Last turn</button><button data-action="ff"><i class="fa fa-step-forward"></i> Next turn</button> <button data-action="ffto"><i class="fa fa-fast-forward"></i> Go to turn...</button> <button data-action="switchViewpoint"><i class="fa fa-random"></i> Switch sides</button>');
+			this.$('.replay-controls').html('<button data-action="play"><i class="fa fa-play"></i> Play</button><button data-action="reset"' + resetDisabled + '><i class="fa fa-undo"></i> Reset</button> <button data-action="rewind"><i class="fa fa-step-backward"></i> Last ' + this.turnWord() + '</button><button data-action="ff"><i class="fa fa-step-forward"></i> Next ' + this.turnWord() + '</button> <button data-action="ffto"><i class="fa fa-fast-forward"></i> Go to ' + this.turnWord() + '...</button> <button data-action="switchViewpoint"><i class="fa fa-random"></i> Switch sides</button>');
 		} else {
-			this.$('.replay-controls').html('<button data-action="pause"><i class="fa fa-pause"></i> Pause</button><button data-action="reset"><i class="fa fa-undo"></i> Reset</button> <button data-action="rewind"><i class="fa fa-step-backward"></i> Last turn</button><button data-action="ff"><i class="fa fa-step-forward"></i> Next turn</button> <button data-action="ffto"><i class="fa fa-fast-forward"></i> Go to turn...</button> <button data-action="switchViewpoint"><i class="fa fa-random"></i> Switch sides</button>');
+			this.$('.replay-controls').html('<button data-action="pause"><i class="fa fa-pause"></i> Pause</button><button data-action="reset"><i class="fa fa-undo"></i> Reset</button> <button data-action="rewind"><i class="fa fa-step-backward"></i> Last ' + this.turnWord() + '</button><button data-action="ff"><i class="fa fa-step-forward"></i> Next ' + this.turnWord() + '</button> <button data-action="ffto"><i class="fa fa-fast-forward"></i> Go to ' + this.turnWord() + '...</button> <button data-action="switchViewpoint"><i class="fa fa-random"></i> Switch sides</button>');
 		}
 	},
 	pause() {
@@ -217,8 +217,12 @@ const Replays = {
 	rewind() {
 		this.battle.seekBy(-1);
 	},
+	/** PokeSquad Battler: a round is every Pokémon on the field acting once (the owner's ask, 2026-10-21) */
+	turnWord() {
+		return this.battle.format?.isPokeSquad ? 'round' : 'turn';
+	},
 	ffto() {
-		let turn: string | number | null = prompt('Turn?');
+		let turn: string | number | null = prompt(this.battle.format?.isPokeSquad ? 'Round?' : 'Turn?');
 		if (!turn?.trim()) return;
 		if (turn === 'e' || turn === 'end' || turn === 'f' || turn === 'finish') turn = Infinity;
 		turn = Number(turn);

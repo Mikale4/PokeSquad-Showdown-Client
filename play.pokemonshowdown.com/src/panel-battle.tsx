@@ -679,13 +679,13 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 				)} {}
 				{!room.battle.hardcoreMode && <>
 					<button class={"button button-first" + (atStart ? " disabled" : "")} data-cmd="/ffto 0" style="margin-right:2px">
-						<i class="fa fa-undo" aria-hidden></i><br />{TL`[First turn]`}
+						<i class="fa fa-undo" aria-hidden></i><br />{room.battle.format?.isPokeSquad ? 'First round' : TL`[First turn]`}
 					</button>
 					<button class={"button button-first" + (atStart ? " disabled" : "")} data-cmd="/ffto -1">
-						<i class="fa fa-step-backward" aria-hidden></i><br />{TL`[Prev turn]`}
+						<i class="fa fa-step-backward" aria-hidden></i><br />{room.battle.format?.isPokeSquad ? 'Prev round' : TL`[Prev turn]`}
 					</button>
 					<button class={"button button-last" + (atEnd ? " disabled" : "")} data-cmd="/ffto +1" style="margin-right:2px">
-						<i class="fa fa-step-forward" aria-hidden></i><br />{TL`[Skip turn]`}
+						<i class="fa fa-step-forward" aria-hidden></i><br />{room.battle.format?.isPokeSquad ? 'Skip round' : TL`[Skip turn]`}
 					</button>
 					<button class={"button button-last" + (atEnd ? " disabled" : "")} data-cmd="/ffto end">
 						<i class="fa fa-fast-forward" aria-hidden></i><br />{TL`[Skip to end]`}
@@ -697,7 +697,7 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 					<i class="fa fa-random" aria-hidden></i> {TL`[Switch viewpoint]`}
 				</button> {}
 				{!room.battle.hardcoreMode && <button class="button" data-cmd="/ffto">
-					<i class="fa fa-random" aria-hidden></i> {TL`[Go to turn]`}
+					<i class="fa fa-random" aria-hidden></i> {room.battle.format?.isPokeSquad ? 'Go to round' : TL`[Go to turn]`}
 				</button>}
 			</p>
 		</div>;
@@ -1390,10 +1390,10 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 				</button> {}
 				{isNotTiny && !room.battle.hardcoreMode && <>
 					<button class="button button-first" data-cmd="/ffto 0" style="margin-right:2px">
-						<i class="fa fa-undo" aria-hidden></i><br />{TL`[First turn]`}
+						<i class="fa fa-undo" aria-hidden></i><br />{room.battle.format?.isPokeSquad ? 'First round' : TL`[First turn]`}
 					</button>
 					<button class="button button-first" data-cmd="/ffto -1">
-						<i class="fa fa-step-backward" aria-hidden></i><br />{TL`[Prev turn]`}
+						<i class="fa fa-step-backward" aria-hidden></i><br />{room.battle.format?.isPokeSquad ? 'Prev round' : TL`[Prev turn]`}
 					</button>
 				</>}
 			</p>
@@ -1412,7 +1412,7 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 						<i class="fa fa-random" aria-hidden></i> {TL`[Switch viewpoint]`}
 					</button> {}
 					{!room.battle.hardcoreMode && <button class="button" data-cmd="/ffto">
-						<i class="fa fa-random" aria-hidden></i> {TL`[Go to turn]`}
+						<i class="fa fa-random" aria-hidden></i> {room.battle.format?.isPokeSquad ? 'Go to round' : TL`[Go to turn]`}
 					</button>}
 				</p>
 			)}

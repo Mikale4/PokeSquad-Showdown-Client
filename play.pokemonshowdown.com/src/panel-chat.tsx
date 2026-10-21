@@ -606,7 +606,7 @@ export class ChatRoom extends PSRoom {
 		'ffto,fastfowardto'(target, cmd, parentElem) {
 			if (!this.battle) return this.errorReply(TL`You are not in a battle`);
 			if (!target) {
-				PS.prompt(TL`Turn number?`, {
+				PS.prompt(this.battle.format?.isPokeSquad ? 'Round number?' : TL`Turn number?`, {
 					defaultValue: `${this.battle.turn}`,
 					type: 'numeric',
 					okButton: TL`[Go]`,
