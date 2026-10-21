@@ -32,6 +32,10 @@ Sprites, sounds and the Pokédex data still load from Pokémon Showdown's own si
   `style/client2.css`, `style/replay.css`), scaled to fit the room (up to 1.5 times with room to spare, the log at least 300 wide).
   Each side's three stand 164 pixels apart on the screen (`pos`, `recalculatePos`), more than an HP bar's 154, so no two bars
   overlap, and each bar stays between the trainers' strips; the team preview's six a side stand 104 apart (`teamPreview`); the backdrop and the weather and terrain pictures cover the stage.
+- Targets (the owner's rule, 2026-10-20): PokeSquad's field has no "adjacent": a move that helps a partner (Helping Hand,
+  After You, Aromatic Mist, Floral Healing, Instruct, Purify) can be aimed at any partner, and every other single-target move
+  (attacks included) at any opposing Pokémon, never a partner (`renderMoveTargetControls` in `panel-battle.tsx`; the engine
+  turns an attack aimed at a partner on an opponent anyway).
 - The teambuilder's move list: a Priority column (sortable, "Prio") after Slot, the move's text on two lines (whatever width the
   row leaves), its whole text on hover (`battle-searchresults.tsx`, `style/battle-search.css`: `.prioritycol`, `.psdesc`;
   `battle-dex-search.ts`: the `priority` sort); battle tooltips show the priority too.

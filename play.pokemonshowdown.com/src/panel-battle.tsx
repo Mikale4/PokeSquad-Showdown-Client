@@ -918,11 +918,17 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 
 		const userSlot = choices.index() + Math.floor(battle.mySide.n / 2) * battle.pokemonControlled;
 		const userSlotCross = battle.farSide.active.length - 1 - userSlot;
+		// PokeSquad Battler (the owner's rule): its field has no "adjacent". A move that helps a partner (Helping Hand, After You...)
+		// reaches any partner, and every other move aimed at one Pokémon (an attack included) any opposing one, never a partner
+		const squad = battle.format?.isPokeSquad;
+		const allyMove = moveTarget === 'adjacentAlly' || moveTarget === 'adjacentAllyOrSelf';
 
 		return <>
 			{battle.farSide.active.map((pokemon, i) => {
 				let disabled = false;
-				if (moveTarget === 'adjacentAlly' || moveTarget === 'adjacentAllyOrSelf') {
+				if (squad) {
+					disabled = allyMove;
+				} else if (moveTarget === 'adjacentAlly' || moveTarget === 'adjacentAllyOrSelf') {
 					disabled = true;
 				} else if (moveTarget === 'normal' || moveTarget === 'adjacentFoe') {
 					if (Math.abs(userSlotCross - i) > 1) disabled = true;
@@ -939,7 +945,9 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 			<div style={{ clear: 'left' }}></div>
 			{battle.nearSide.active.map((pokemon, i) => {
 				let disabled = false;
-				if (moveTarget === 'adjacentFoe') {
+				if (squad) {
+					disabled = !allyMove;
+				} else if (moveTarget === 'adjacentFoe') {
 					disabled = true;
 				} else if (moveTarget === 'normal' || moveTarget === 'adjacentAlly' || moveTarget === 'adjacentAllyOrSelf') {
 					if (Math.abs(userSlot - i) > 1) disabled = true;
