@@ -494,9 +494,13 @@ export class TeamEditorState extends PSModel {
 		}
 		return null;
 	}
+	/** PokeSquad Battler's teambuilder table (not there until the teambuilder's data has loaded) */
+	pokeSquadTable(): any {
+		return (window as any).BattleTeambuilderTable?.['gen9pokesquad'];
+	}
 	/** PokeSquad Battler: a move's slot (S1, S2, S3) */
 	moveSlotOf(move: string) {
-		const slots = BattleTeambuilderTable['gen9pokesquad']?.slots || {};
+		const slots = this.pokeSquadTable()?.slots || {};
 		const id = toID(move);
 		return slots[id] || (id.startsWith('hiddenpower') ? slots['hiddenpower'] : 0) || 2;
 	}
@@ -515,7 +519,7 @@ export class TeamEditorState extends PSModel {
 	getIVs(set: Dex.PokemonSet) {
 		if (this.format.isPokeSquad) {
 			// (the game's Lv 100 rules: every IV at its top rank)
-			const iv = BattleTeambuilderTable['gen9pokesquad']?.iv ?? 28;
+			const iv = this.pokeSquadTable()?.iv ?? 28;
 			return { hp: iv, atk: iv, def: iv, spa: iv, spd: iv, spe: iv };
 		}
 		const ivs = this.defaultIVs(set);
@@ -2410,8 +2414,9 @@ class TeamEditorForm extends preact.Component<{
 			const input = this.base!.querySelector<HTMLInputElement | HTMLButtonElement>(
 				(focus.type === 'details' || focus.type === 'stats' || focus.type === 'import') && this.pendingFocusButton ?
 					`button[name="${focus.type}"][value="${focusValue}"]` :
-					focus.type === 'details' ? `div.set-details-form input:not([name=nickname]), div.set-details-form select` :
-					focus.type === 'stats' ? `div.set-stats-form input` :
+					focus.type === 'details' ? `div.set-details-form input:not([name=nickname]):not(:disabled), div.set-details-form select` :
+					// (PokeSquad Battler's stats panel has only the nature to choose)
+					focus.type === 'stats' ? `div.set-stats-form input, div.set-stats-form select` :
 					focus.type === 'import' ? `div.set-import-form textarea` :
 					focus.type === 'move' && focus.typeIndex === -1 ? `input[name=value]` :
 					`input.set-field[data-focus="${focusValue}"]`
@@ -2430,6 +2435,12 @@ class TeamEditorForm extends preact.Component<{
 				} else {
 					(input as HTMLInputElement).select?.();
 				}
+				this.pendingFocus = null;
+				this.pendingFocusPolite = true;
+				this.pendingFocusValue = null;
+				this.pendingFocusSelection = null;
+			} else if (focus.type === 'details' || focus.type === 'stats' || focus.type === 'import') {
+				// (a panel with nothing to focus mustn't keep waiting: every other field ignores clicks while it does)
 				this.pendingFocus = null;
 				this.pendingFocusPolite = true;
 				this.pendingFocusValue = null;
