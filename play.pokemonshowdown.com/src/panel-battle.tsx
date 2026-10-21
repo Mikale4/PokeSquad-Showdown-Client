@@ -933,6 +933,8 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 				} else if (moveTarget === 'normal' || moveTarget === 'adjacentFoe') {
 					if (Math.abs(userSlotCross - i) > 1) disabled = true;
 				}
+				// (PokeSquad Battler, the owner's ask: a place with no Pokémon in it can't be picked)
+				if (squad && (!pokemon || pokemon.fainted)) disabled = true;
 
 				if (pokemon?.fainted) pokemon = null;
 				return this.renderPokemonButton({
@@ -953,6 +955,7 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 					if (Math.abs(userSlot - i) > 1) disabled = true;
 				}
 				if (moveTarget !== 'adjacentAllyOrSelf' && userSlot === i) disabled = true;
+				if (squad && (!pokemon || pokemon.fainted)) disabled = true;
 
 				if (pokemon?.fainted) pokemon = null;
 				return this.renderPokemonButton({

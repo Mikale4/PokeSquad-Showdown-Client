@@ -3879,10 +3879,12 @@ export class Battle {
 				// PokeSquad Battler's turn meter: |custom|-pokesquadmeter|whose turn it is|ident=meter;...|who's next;...
 				const get = (ident: string) => ident ? this.getPokemon(ident) : null;
 				for (const entry of (args[3] || '').split(';')) {
-					const [ident, value, cds] = entry.split('=');
+					const [ident, value, cds, hits] = entry.split('=');
 					const poke = get(ident);
 					if (poke) poke.turnMeter = parseFloat(value) || 0;
 					if (poke && cds) { const cd: { [id: string]: number } = {}; for (const x of cds.split(',')) { const [m, n] = x.split(':'); cd[m] = +n || 0; } poke.pokesquadCooldowns = cd; }
+					// (the hits it has taken, the game's own count: Rage Fist and the moves like it go by it)
+					if (poke && hits !== undefined) poke.timesAttacked = +hits || 0;
 				}
 				this.pokesquadActor = get(args[2]);
 				if (args.length > 4) this.pokesquadOrder = (args[4] || '').split(';').map(get).filter(Boolean) as Pokemon[];

@@ -627,7 +627,7 @@ export class BattleTooltips {
 	showMoveTooltip(
 		move: Dex.Move, isZOrMax: string, pokemon: Pokemon, serverPokemon: ServerPokemon, gmaxMove?: Dex.Move
 	) {
-		if (this.battle.format?.isPokeSquad) return this.showPokeSquadMoveTooltip(move);
+		if (this.battle.format?.isPokeSquad) return this.showPokeSquadMoveTooltip(move, pokemon);
 		let text = '';
 
 		let zEffect = '';
@@ -917,12 +917,19 @@ export class BattleTooltips {
 	 * PokeSquad Battler: a move as the game has it (its power, accuracy, slot and cooldown, and its own text, which says what
 	 * changes it). Showdown's modifiers are left out: the game's rules differ (an item's or Ability's effect is a stat stage).
 	 */
-	showPokeSquadMoveTooltip(move: Dex.Move) {
+	showPokeSquadMoveTooltip(move: Dex.Move, pokemon?: Pokemon | null) {
 		const table = (window as any).BattleTeambuilderTable?.gen9pokesquad;
 		const slot = table?.slots[move.id] || 2;
 		const cd = table?.cd?.[slot] || 0;
 		let text = `<h2>${TL(move)}<br />${Dex.getTypeIcon(move.type)} ${Dex.getCategoryIcon(move.category)}</h2>`;
-		if (move.category !== 'Status') text += `<p>${TL.label(TL.tag.basepower, move.basePower || '\u2014')}</p>`;
+		// (Stored Power, Rage, Rage Fist, Punishment and Payback, the owner's rules: 50 power, plus 50 for every hit the user has taken,
+		// up to 350; the hits are the game's own count, from the turn meter's line)
+		let power: string | number = move.basePower || '\u2014';
+		if (pokemon && table?.rage?.includes(move.id)) {
+			const hits = pokemon.timesAttacked || 0;
+			power = `${Math.min(350, move.basePower + 50 * hits)} (hit ${hits} time${hits === 1 ? '' : 's'})`;
+		}
+		if (move.category !== 'Status') text += `<p>${TL.label(TL.tag.basepower, power)}</p>`;
 		text += `<p>${TL.label(TL.tag.accuracy, move.accuracy === true || !move.accuracy ? `can't miss` : `${move.accuracy}%`)}</p>`;
 		text += `<p><small>Slot:</small> S${slot} ${cd ? `(a ${cd}-turn cooldown after use)` : '(no cooldown)'}</p>`;
 		text += `<p><small>Priority:</small> ${move.priority > 0 ? '+' + move.priority : move.priority < 0 ? '\u2212' + -move.priority : '0'}</p>`;
