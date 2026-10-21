@@ -108,6 +108,8 @@ export class Pokemon implements PokemonDetails, PokemonHealth {
 	movestatuses: { [effectid: string]: EffectState } = {};
 	/** PokeSquad Battler: its turn meter, 0-100 (-1: not known yet) */
 	turnMeter = -1;
+	/** PokeSquad Battler: each move's cooldown, by move id (|custom|-pokesquadmeter): its own turns until it's ready */
+	pokesquadCooldowns: { [moveid: string]: number } | null = null;
 	lastMove = '';
 
 	/** [[moveName, ppUsed]] */
@@ -3877,9 +3879,10 @@ export class Battle {
 				// PokeSquad Battler's turn meter: |custom|-pokesquadmeter|whose turn it is|ident=meter;...|who's next;...
 				const get = (ident: string) => ident ? this.getPokemon(ident) : null;
 				for (const entry of (args[3] || '').split(';')) {
-					const [ident, value] = entry.split('=');
+					const [ident, value, cds] = entry.split('=');
 					const poke = get(ident);
 					if (poke) poke.turnMeter = parseFloat(value) || 0;
+					if (poke && cds) { const cd: { [id: string]: number } = {}; for (const x of cds.split(',')) { const [m, n] = x.split(':'); cd[m] = +n || 0; } poke.pokesquadCooldowns = cd; }
 				}
 				this.pokesquadActor = get(args[2]);
 				if (args.length > 4) this.pokesquadOrder = (args[4] || '').split(';').map(get).filter(Boolean) as Pokemon[];

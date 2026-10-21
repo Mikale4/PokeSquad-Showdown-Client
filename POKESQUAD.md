@@ -47,6 +47,9 @@ Sprites, sounds and the Pokédex data still load from Pokémon Showdown's own si
   this build's `js/battle-animations.js` and `js/battle-animations-moves.js` instead of `data/graphics.js` (which only a full
   build makes, so the page used to fall back to Showdown's own copy).
 - Tooltips by the game's rules (`battle-tooltips.ts`: `showPokeSquadMoveTooltip`, `getSpeedRange`, `calculateModifiedStats`);
+  a Pokémon's tooltip lists each move with its slot and cooldown where Showdown shows PP (`pokeSquadMoveLine`: "Glacial Lance (S3,
+  ready in 2)"; your own Pokémon every move, the other side's the ones they've used), from the cooldowns the server sends with the
+  turn meter (`ident=meter=move:cooldown,...`, `pokesquadCooldowns`) and in your team's request;
   move buttons by move id with the slot or cooldown in place of PP (`panel-battle.tsx`).
 - `Config.localladder`: the Ladder page asks the server (`/cmd laddertop`, `client-main.ts`, `panel-mainmenu.tsx`).
 - `Config.replayembed`: a downloaded replay loads this site's `js/replay-embed.js` (`battle-log.ts`), which loads this site's files

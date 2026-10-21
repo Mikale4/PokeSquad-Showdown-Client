@@ -1087,7 +1087,16 @@ export class BattleTooltips {
 
 		text += this.renderStats(clientPokemon, serverPokemon, !isActive);
 
-		if (serverPokemon && !isActive) {
+		if (this.battle.format?.isPokeSquad && (serverPokemon || clientPokemon?.moveTrack.length)) {
+			// (PokeSquad Battler: no PP; each move's slot and how long until it's ready. Your own Pokémon: every move; the other
+			// side's: the ones they've used)
+			const cds = (clientPokemon?.isActive() && clientPokemon.pokesquadCooldowns) ||
+				(serverPokemon as any)?.pokesquadCooldowns || clientPokemon?.pokesquadCooldowns || null;
+			const ids = serverPokemon ? serverPokemon.moves : clientPokemon!.moveTrack.map(([name]) => toID(name.replace(/^\*/, '')));
+			text += `<p class="tooltip-section">`;
+			for (const moveid of ids) text += `${this.pokeSquadMoveLine(moveid, cds)}<br />`;
+			text += `</p>`;
+		} else if (serverPokemon && !isActive) {
 			// move list
 			text += `<p class="tooltip-section">`;
 			const battlePokemon = clientPokemon || this.battle.findCorrespondingPokemon(pokemon);
@@ -1628,6 +1637,14 @@ export class BattleTooltips {
 		return buf;
 	}
 
+	/** PokeSquad Battler: a move in a Pokémon's tooltip, with its slot and cooldown where Showdown shows PP */
+	pokeSquadMoveLine(moveid: string, cds: { [id: string]: number } | null) {
+		const move = this.battle.dex.moves.get(moveid);
+		const slot = (window as any).BattleTeambuilderTable?.gen9pokesquad?.slots[move.id] || 2;
+		const cd = cds ? cds[move.id] : undefined;
+		const when = slot === 1 ? 'no cooldown' : cd === undefined ? '' : cd > 0 ? `ready in ${cd}` : 'ready';
+		return `&#8226; ${TL(move)} <small>(S${slot}${when ? ', ' + when : ''})</small>`;
+	}
 	getPPUseText(moveTrackRow: [string, PPState], showKnown?: boolean) {
 		let [moveName, ppUsed] = moveTrackRow;
 		let move;
