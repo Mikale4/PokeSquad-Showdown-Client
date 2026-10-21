@@ -242,6 +242,21 @@ License: GPLv2
 	min-height: 10px;
 	font-size: 7pt;
 }
+/* PokeSquad Battler: a Pokémon's types above its name */
+.statbar .pstypes {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -14px;
+	height: 14px;
+	text-align: center;
+	line-height: 14px;
+	white-space: nowrap;
+}
+.statbar .pstypes img {
+	margin: 0 1px;
+	vertical-align: top;
+}
 /* PokeSquad Battler: the turn meter under each HP bar (gold on the Pokémon whose turn it is), and who acts next */
 .statbar .hpbar .psmeter {
 	position: relative;

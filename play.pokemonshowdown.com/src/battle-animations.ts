@@ -2333,7 +2333,9 @@ export class PokemonSprite extends Sprite {
 		// (PokeSquad Battler: an HP bar stays on the battlefield, between the trainers' strips at each side, 100 wide)
 		this.statbarLeft = Math.max(104, Math.min(STAGE_W - 104 - 154, this.statbarLeft));
 		this.statbarTop = pos.top - 73 - statbarOffset;
-		if (this.statbarTop < -4) this.statbarTop = -4;
+		// (PokeSquad Battler: room for the types above the name, inside the battlefield)
+		const minTop = this.scene.battle.format?.isPokeSquad ? 12 : -4;
+		if (this.statbarTop < minTop) this.statbarTop = minTop;
 
 		if (moreActive) {
 			// make sure element is in the right z-order
@@ -2820,6 +2822,8 @@ export class PokemonSprite extends Sprite {
 
 	getStatbarHTML(pokemon: Pokemon) {
 		let buf = '<div class="statbar' + (this.isFrontSprite ? ' lstatbar' : ' rstatbar') + this.getClassForPosition(pokemon.slot) + '" style="display: none">';
+		// (PokeSquad Battler: its types above its name, the owner's ask, 2026-10-21; filled in by updateStatbar, so a type change shows)
+		if (this.scene.battle.format?.isPokeSquad) buf += `<div class="pstypes"></div>`;
 		const ignoreNick = this.isFrontSprite && (this.scene.battle.ignoreOpponent || this.scene.battle.ignoreNicks);
 		buf += `<strong>${BattleLog.escapeHTML(ignoreNick ? pokemon.speciesForme : pokemon.name)}`;
 		const gender = pokemon.gender;
@@ -2881,6 +2885,13 @@ export class PokemonSprite extends Sprite {
 		}
 		// (a lower HP bar is drawn over the one above it, so on both sides each Pokémon's name shows over the bars above it)
 		this.$statbar.css('z-index', 10 + Math.max(0, Math.round(this.statbarTop)));
+		// (PokeSquad Battler: its types as they are now, Soak and the like included)
+		const $types = this.$statbar.find('.pstypes');
+		if ($types.length) {
+			const [types, added] = pokemon.getTypes();
+			const list = [...types, ...(added ? [added] : [])].join('/');
+			if ($types.attr('data-types') !== list) $types.attr('data-types', list).html(list.split('/').map(t => Dex.getTypeIcon(t)).join(''));
+		}
 		let hpcolor;
 		if (updatePrevhp || updateHp) {
 			hpcolor = BattleScene.getHPColor(pokemon);
@@ -2918,13 +2929,13 @@ export class PokemonSprite extends Sprite {
 		}
 		if (pokemon.terastallized) {
 			status += `<img src="${Dex.resourcePrefix}sprites/types/${encodeURIComponent(pokemon.terastallized)}.png" alt="${pokemon.terastallized}" class="pixelated" /> `;
-		} else if (pokemon.volatiles.typechange?.[1]) {
+		} else if (pokemon.volatiles.typechange?.[1] && !this.scene.battle.format?.isPokeSquad) {   // (PokeSquad: above its name)
 			const types = pokemon.volatiles.typechange[1].split('/');
 			for (const type of types) {
 				status += '<img src="' + Dex.resourcePrefix + 'sprites/types/' + encodeURIComponent(type) + '.png" alt="' + type + '" class="pixelated" /> ';
 			}
 		}
-		if (pokemon.volatiles.typeadd) {
+		if (pokemon.volatiles.typeadd && !this.scene.battle.format?.isPokeSquad) {
 			const type = pokemon.volatiles.typeadd[1];
 			status += '+<img src="' + Dex.resourcePrefix + 'sprites/types/' + type + '.png" alt="' + type + '" class="pixelated" /> ';
 		}
