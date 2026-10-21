@@ -922,12 +922,16 @@ class BattlePanel extends PSRoomPanel<BattleRoom> {
 		// reaches any partner, and every other move aimed at one Pokémon (an attack included) any opposing one, never a partner
 		const squad = battle.format?.isPokeSquad;
 		const allyMove = moveTarget === 'adjacentAlly' || moveTarget === 'adjacentAllyOrSelf';
+		// (Camouflage, the owner's rule: while a partner of it is on the field it can't be picked, unless every one on that side is hidden)
+		const camo = (p: Pokemon | null) => !!p && !p.fainted && !!p.volatiles.camouflage &&
+			battle.farSide.active.some(q => q && q !== p && !q.fainted);
+		const allHidden = battle.farSide.active.every(q => !q || q.fainted || camo(q));
 
 		return <>
 			{battle.farSide.active.map((pokemon, i) => {
 				let disabled = false;
 				if (squad) {
-					disabled = allyMove;
+					disabled = allyMove || (!allHidden && camo(pokemon));
 				} else if (moveTarget === 'adjacentAlly' || moveTarget === 'adjacentAllyOrSelf') {
 					disabled = true;
 				} else if (moveTarget === 'normal' || moveTarget === 'adjacentFoe') {
